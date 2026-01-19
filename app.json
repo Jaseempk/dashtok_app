@@ -1,0 +1,71 @@
+{
+  "expo": {
+    "name": "Dashtok",
+    "slug": "dashtok",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "dashtok",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/images/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0a0f1a"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.dashtok.app",
+      "infoPlist": {
+        "NSHealthShareUsageDescription": "Dashtok needs access to your health data to track your activities and reward your movement.",
+        "NSHealthUpdateUsageDescription": "Dashtok needs access to update your health data.",
+        "NSLocationWhenInUseUsageDescription": "Dashtok needs your location to track your walks and runs.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Dashtok needs your location to track activities in the background.",
+        "NSMotionUsageDescription": "Dashtok uses motion data to count your steps.",
+        "NSFaceIDUsageDescription": "Dashtok uses Face ID for secure authentication."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#0a0f1a"
+      },
+      "package": "com.dashtok.app",
+      "permissions": [
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACTIVITY_RECOGNITION",
+        "android.permission.health.READ_STEPS",
+        "android.permission.health.READ_DISTANCE"
+      ]
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-notifications",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow Dashtok to track your activities in the background."
+        }
+      ],
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Allow Dashtok to use Face ID for secure authentication."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "your-project-id"
+      }
+    }
+  }
+}
