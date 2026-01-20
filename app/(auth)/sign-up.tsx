@@ -9,19 +9,18 @@ import {
 } from 'react-native';
 import { useSignUp } from '@clerk/clerk-expo';
 import { useRouter, Link } from 'expo-router';
-import { Button, Input } from '@/components/ui';
-import { SocialAuthButtons } from '@/features/auth/components/SocialAuthButtons';
-
-type SignUpStep = 'credentials' | 'verification';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Button, Icon } from '@/components/ui';
+import { AuthInput } from '@/components/auth';
 
 export default function SignUpScreen() {
-  const { signUp, setActive, isLoaded } = useSignUp();
+  const { signUp, isLoaded } = useSignUp();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
-  const [step, setStep] = useState<SignUpStep>('credentials');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -35,11 +34,17 @@ export default function SignUpScreen() {
       await signUp.create({
         emailAddress: email,
         password,
+        firstName: username.trim(), // Username stored as firstName
       });
 
       // Send email verification code
       await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
-      setStep('verification');
+
+      // Navigate to verification screen with email
+      router.push({
+        pathname: '/(auth)/verify-email',
+        params: { email },
+      });
     } catch (err: unknown) {
       const clerkError = err as { errors?: Array<{ message: string }> };
       const message = clerkError.errors?.[0]?.message || 'Failed to create account';
@@ -47,106 +52,9 @@ export default function SignUpScreen() {
     } finally {
       setIsLoading(false);
     }
-  }, [isLoaded, signUp, email, password]);
+  }, [isLoaded, signUp, username, email, password, router]);
 
-  const handleVerifyEmail = useCallback(async () => {
-    if (!isLoaded || !signUp) return;
-
-    setError('');
-    setIsLoading(true);
-
-    try {
-      const result = await signUp.attemptEmailAddressVerification({ code });
-
-      if (result.status === 'complete') {
-        await setActive({ session: result.createdSessionId });
-        router.replace('/');
-      } else {
-        setError('Verification incomplete. Please try again.');
-      }
-    } catch (err: unknown) {
-      const clerkError = err as { errors?: Array<{ message: string }> };
-      const message = clerkError.errors?.[0]?.message || 'Invalid verification code';
-      setError(message);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [isLoaded, signUp, code, setActive, router]);
-
-  const handleResendCode = useCallback(async () => {
-    if (!isLoaded || !signUp) return;
-
-    setError('');
-    try {
-      await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
-      setError(''); // Clear any previous error
-    } catch (err: unknown) {
-      const clerkError = err as { errors?: Array<{ message: string }> };
-      const message = clerkError.errors?.[0]?.message || 'Failed to resend code';
-      setError(message);
-    }
-  }, [isLoaded, signUp]);
-
-  const isCredentialsValid = email.trim() !== '' && password.length >= 8;
-  const isCodeValid = code.length === 6;
-
-  if (step === 'verification') {
-    return (
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        className="flex-1 bg-background-primary"
-      >
-        <ScrollView
-          contentContainerClassName="flex-grow justify-center px-6 py-12"
-          keyboardShouldPersistTaps="handled"
-        >
-          <View className="mb-10">
-            <Text className="text-4xl font-bold text-white mb-2">Verify email</Text>
-            <Text className="text-base text-gray-400">
-              We sent a 6-digit code to {email}
-            </Text>
-          </View>
-
-          <View className="gap-4 mb-6">
-            <Input
-              label="Verification Code"
-              placeholder="000000"
-              value={code}
-              onChangeText={setCode}
-              keyboardType="number-pad"
-              maxLength={6}
-              autoFocus
-            />
-
-            {error ? (
-              <Text className="text-red-500 text-sm ml-1">{error}</Text>
-            ) : null}
-          </View>
-
-          <Button
-            onPress={handleVerifyEmail}
-            isLoading={isLoading}
-            disabled={!isCodeValid}
-          >
-            Verify Email
-          </Button>
-
-          <View className="flex-row justify-center mt-6">
-            <Text className="text-gray-400">Didn't receive the code? </Text>
-            <Pressable onPress={handleResendCode}>
-              <Text className="text-primary-500 font-semibold">Resend</Text>
-            </Pressable>
-          </View>
-
-          <View className="flex-row justify-center mt-4">
-            <Pressable onPress={() => setStep('credentials')}>
-              <Text className="text-gray-500">Back to sign up</Text>
-            </Pressable>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    );
-  }
+  const isFormValid = username.trim() !== '' && email.trim() !== '' && password.length >= 8;
 
   return (
     <KeyboardAvoidingView
@@ -154,60 +62,89 @@ export default function SignUpScreen() {
       className="flex-1 bg-background-primary"
     >
       <ScrollView
-        contentContainerClassName="flex-grow justify-center px-6 py-12"
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingHorizontal: 24,
+          paddingTop: insets.top + 16,
+          paddingBottom: insets.bottom + 24,
+        }}
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
-        <View className="mb-10">
-          <Text className="text-4xl font-bold text-white mb-2">Create account</Text>
-          <Text className="text-base text-gray-400">
-            Start earning screen time with movement
+        {/* Header */}
+        <View className="flex-row items-center justify-between mb-8">
+          <Link href="/(auth)/sign-in" asChild>
+            <Pressable className="w-10 h-10 rounded-full bg-background-tertiary items-center justify-center">
+              <Icon name="arrow-back" size="md" color="#ffffff" />
+            </Pressable>
+          </Link>
+          <Text className="text-xs text-primary-500 font-medium tracking-widest uppercase">
+            Elite Access
           </Text>
         </View>
 
-        <View className="gap-4 mb-6">
-          <Input
-            label="Email"
-            placeholder="you@example.com"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoComplete="email"
-            autoCorrect={false}
-          />
+        {/* Hero Text */}
+        <View className="mb-8">
+          <Text className="text-4xl font-bold text-white">Start Your</Text>
+          <Text className="text-4xl font-bold text-primary-500 italic">Journey</Text>
+          <Text className="text-base text-gray-400 mt-2">Turn movement into reward</Text>
+        </View>
 
-          <Input
-            label="Password"
-            placeholder="At least 8 characters"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            autoCapitalize="none"
-            autoComplete="new-password"
-          />
+        {/* Form Card */}
+        <View className="bg-background-secondary/60 border border-primary-500/20 rounded-2xl p-5 mb-6">
+          <View className="gap-5">
+            <AuthInput
+              label="Identity"
+              icon="person"
+              placeholder="Username"
+              value={username}
+              onChangeText={setUsername}
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+
+            <AuthInput
+              label="Communications"
+              icon="mail"
+              placeholder="Email Address"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoComplete="email"
+              autoCorrect={false}
+            />
+
+            <AuthInput
+              label="Security"
+              icon="lock"
+              placeholder="Password (min 8 characters)"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              autoCapitalize="none"
+              autoComplete="new-password"
+            />
+          </View>
 
           {error ? (
-            <Text className="text-red-500 text-sm ml-1">{error}</Text>
+            <Text className="text-red-500 text-sm mt-3 text-center">{error}</Text>
           ) : null}
+
+          <View className="mt-6">
+            <Button
+              onPress={handleCreateAccount}
+              isLoading={isLoading}
+              disabled={!isFormValid}
+              icon="sparkles"
+            >
+              Create Account
+            </Button>
+          </View>
         </View>
 
-        <Button
-          onPress={handleCreateAccount}
-          isLoading={isLoading}
-          disabled={!isCredentialsValid}
-        >
-          Create Account
-        </Button>
-
-        <View className="my-8 flex-row items-center">
-          <View className="flex-1 h-px bg-border-subtle" />
-          <Text className="mx-4 text-gray-500 text-sm">or continue with</Text>
-          <View className="flex-1 h-px bg-border-subtle" />
-        </View>
-
-        <SocialAuthButtons />
-
-        <View className="flex-row justify-center mt-8">
+        {/* Sign In Link */}
+        <View className="flex-row justify-center mb-6">
           <Text className="text-gray-400">Already have an account? </Text>
           <Link href="/(auth)/sign-in" asChild>
             <Pressable>
@@ -215,6 +152,14 @@ export default function SignUpScreen() {
             </Pressable>
           </Link>
         </View>
+
+        {/* Terms */}
+        <Text className="text-xs text-gray-500 text-center leading-5">
+          By proceeding, you agree to our{' '}
+          <Text className="text-gray-400 underline">Terms of Service</Text>
+          {' & '}
+          <Text className="text-gray-400 underline">Privacy Policy</Text>.
+        </Text>
       </ScrollView>
     </KeyboardAvoidingView>
   );

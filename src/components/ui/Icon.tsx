@@ -37,6 +37,11 @@ const ICON_MAP = {
   'warning': 'warning',
   'info': 'information-circle',
 
+  // Auth
+  'mail': 'mail-outline',
+  'eye': 'eye-outline',
+  'eye-off': 'eye-off-outline',
+
   // Misc
   'target': 'locate',
   'flame': 'flame',
