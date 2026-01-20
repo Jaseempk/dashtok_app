@@ -41,11 +41,31 @@ const ICON_MAP = {
   'target': 'locate',
   'flame': 'flame',
   'trophy': 'trophy',
+  'trophy-outline': 'trophy-outline',
   'star': 'star',
   'settings': 'settings-outline',
   'person': 'person-outline',
+  'person-filled': 'person',
   'hourglass': 'hourglass-outline',
   'sparkles': 'sparkles',
+
+  // Tab bar
+  'home': 'home',
+  'home-outline': 'home-outline',
+  'stats': 'stats-chart',
+  'stats-outline': 'stats-chart-outline',
+
+  // Activities
+  'trash': 'trash-outline',
+  'filter': 'options-outline',
+  'stopwatch': 'stopwatch-outline',
+  'speedometer': 'speedometer-outline',
+  'footsteps': 'footsteps-outline',
+  'bicycle': 'bicycle-outline',
+  'shield-check': 'shield-checkmark',
+  'cloud': 'cloud-outline',
+  'hand': 'hand-left-outline',
+  'flag': 'flag-outline',
 } as const;
 
 type IconName = keyof typeof ICON_MAP;

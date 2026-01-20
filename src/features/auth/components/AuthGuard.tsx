@@ -80,7 +80,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
           } else {
             // Fully authenticated and onboarded
             console.log('[AuthGuard] User onboarded, redirecting to app');
-            if (inAuthGroup || inOnboardingGroup) {
+            if (!inAppGroup) {
               router.replace('/(app)/(tabs)');
             }
           }
