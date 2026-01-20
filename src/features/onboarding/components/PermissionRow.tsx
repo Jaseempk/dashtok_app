@@ -1,7 +1,8 @@
 import { View, Text } from 'react-native';
+import { Icon, IconName } from '@/components/ui';
 
 interface PermissionRowProps {
-  icon: string;
+  icon: IconName;
   title: string;
   description: string;
 }
@@ -11,7 +12,7 @@ export function PermissionRow({ icon, title, description }: PermissionRowProps) 
     <View className="flex-row items-center gap-4 p-4 rounded-xl bg-background-secondary border border-border-subtle">
       {/* Icon */}
       <View className="w-12 h-12 rounded-full bg-primary-500/10 border border-primary-500/30 items-center justify-center">
-        <Text className="text-xl">{icon}</Text>
+        <Icon name={icon} size="lg" color="#00f5d4" />
       </View>
 
       {/* Text */}
@@ -22,7 +23,7 @@ export function PermissionRow({ icon, title, description }: PermissionRowProps) 
 
       {/* Checkmark */}
       <View className="w-6 h-6 rounded-full bg-primary-500/20 items-center justify-center">
-        <Text className="text-primary-500 text-xs">✓</Text>
+        <Icon name="check" size="sm" color="#00f5d4" />
       </View>
     </View>
   );

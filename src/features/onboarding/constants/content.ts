@@ -1,3 +1,4 @@
+import type { IconName } from '@/components/ui';
 import { ProfileType } from '../store/onboardingStore';
 
 export const PROFILE_CONTENT: Record<
@@ -49,19 +50,19 @@ export const PROFILE_CONTENT: Record<
   },
 };
 
-export const SOLUTION_PILLARS = [
+export const SOLUTION_PILLARS: { icon: IconName; title: string; description: string }[] = [
   {
-    icon: '🔒',
+    icon: 'lock',
     title: 'Earn Before You Scroll',
     description: 'Lock distracting apps until you hit your step goal.',
   },
   {
-    icon: '🔥',
+    icon: 'flame',
     title: 'Small Wins, Big Streaks',
     description: 'Build momentum with micro-goals tailored to your pace.',
   },
   {
-    icon: '⚖️',
+    icon: 'target',
     title: 'No Guilt, Just Balance',
     description: 'Flex days allow you to rest without breaking your streak.',
   },
@@ -91,39 +92,39 @@ export const ACTIVITY_OPTIONS = [
   },
 ];
 
-export const HEALTH_PERMISSIONS = [
+export const HEALTH_PERMISSIONS: { icon: IconName; title: string; description: string }[] = [
   {
-    icon: '👣',
+    icon: 'walk',
     title: 'Steps & Cadence',
     description: 'Track your daily movement rhythm',
   },
   {
-    icon: '📏',
+    icon: 'target',
     title: 'Distance',
     description: 'Measure your cardio milestones',
   },
   {
-    icon: '📈',
+    icon: 'chart',
     title: 'Workout Intensity',
     description: 'Monitor your effort levels',
   },
 ];
 
-export const NOTIFICATION_TYPES = [
+export const NOTIFICATION_TYPES: { icon: IconName; title: string; preview: string; time: string }[] = [
   {
-    icon: '☀️',
+    icon: 'bell',
     title: 'Morning kick-off',
     preview: "Sun's up! Let's hit that 5k goal today.",
     time: 'NOW',
   },
   {
-    icon: '🔥',
+    icon: 'flame',
     title: 'Streak at risk',
     preview: "Don't break your 7-day streak!",
     time: '2h ago',
   },
   {
-    icon: '🏆',
+    icon: 'trophy',
     title: 'Goal crushed!',
     preview: "You just earned the 'Early Bird' badge.",
     time: '1d ago',

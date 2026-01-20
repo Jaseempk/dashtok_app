@@ -1,5 +1,6 @@
 import { View, Text } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Icon } from '@/components/ui';
 import { OnboardingLayout, OnboardingHero, QuestionCard } from '@/features/onboarding/components';
 import { useOnboardingStore, ScreenTimeFeeling } from '@/features/onboarding/store/onboardingStore';
 
@@ -31,7 +32,7 @@ export default function ScreenTimeScreen() {
       <OnboardingHero
         fallbackContent={
           <View className="items-center">
-            <Text className="text-5xl mb-2">⏳</Text>
+            <Icon name="hourglass" size="3xl" color="#00f5d4" style={{ marginBottom: 8 }} />
             <Text className="text-gray-400 text-sm mt-2">Time slipping away...</Text>
           </View>
         }

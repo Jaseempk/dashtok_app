@@ -22,7 +22,8 @@
         "NSLocationWhenInUseUsageDescription": "Dashtok needs your location to track your walks and runs.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "Dashtok needs your location to track activities in the background.",
         "NSMotionUsageDescription": "Dashtok uses motion data to count your steps.",
-        "NSFaceIDUsageDescription": "Dashtok uses Face ID for secure authentication."
+        "NSFaceIDUsageDescription": "Dashtok uses Face ID for secure authentication.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -36,7 +37,9 @@
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.ACTIVITY_RECOGNITION",
         "android.permission.health.READ_STEPS",
-        "android.permission.health.READ_DISTANCE"
+        "android.permission.health.READ_DISTANCE",
+        "android.permission.USE_BIOMETRIC",
+        "android.permission.USE_FINGERPRINT"
       ]
     },
     "plugins": [
@@ -64,8 +67,9 @@
         "origin": false
       },
       "eas": {
-        "projectId": "your-project-id"
+        "projectId": "ed964bb4-0806-416c-8f41-28b4c3aa774f"
       }
-    }
+    },
+    "owner": "keccak256"
   }
 }

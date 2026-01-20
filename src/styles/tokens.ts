@@ -85,4 +85,13 @@ export const typography = {
     semibold: '600' as const,
     bold: '700' as const,
   },
+  /*
+   * Typography Scale (Tailwind classes):
+   * - Display:  text-4xl font-bold    → Welcome headlines, celebration
+   * - Title:    text-3xl font-bold    → Screen titles, questions
+   * - Heading:  text-xl font-semibold → Section headers, card titles
+   * - Body:     text-base             → Default content
+   * - Small:    text-sm               → Secondary text, descriptions
+   * - Caption:  text-xs               → Labels, hints, metadata
+   */
 } as const;

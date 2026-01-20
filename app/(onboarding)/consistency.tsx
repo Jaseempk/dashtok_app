@@ -1,5 +1,6 @@
 import { View, Text } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Icon } from '@/components/ui';
 import { OnboardingLayout, OnboardingHero, QuestionCard } from '@/features/onboarding/components';
 import { useOnboardingStore, ConsistencyLevel } from '@/features/onboarding/store/onboardingStore';
 
@@ -31,7 +32,7 @@ export default function ConsistencyScreen() {
       <OnboardingHero
         fallbackContent={
           <View className="items-center">
-            <Text className="text-4xl mb-2">📅</Text>
+            <Icon name="calendar" size="3xl" color="#00f5d4" style={{ marginBottom: 8 }} />
             <View className="flex-row gap-1 mt-2">
               {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, i) => (
                 <View
@@ -43,7 +44,7 @@ export default function ConsistencyScreen() {
                   }`}
                 >
                   {[0, 3, 6].includes(i) && (
-                    <Text className="text-primary-500 text-xs">✓</Text>
+                    <Icon name="check" size="xs" color="#00f5d4" />
                   )}
                 </View>
               ))}

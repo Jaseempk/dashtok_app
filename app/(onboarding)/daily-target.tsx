@@ -1,7 +1,7 @@
 import { View, Text, Pressable, Switch } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Button } from '@/components/ui';
+import { Button, Icon } from '@/components/ui';
 import { DistanceSlider } from '@/features/onboarding/components';
 import { useOnboardingStore } from '@/features/onboarding/store/onboardingStore';
 
@@ -35,9 +35,9 @@ export default function DailyTargetScreen() {
       <View className="flex-row items-center justify-between px-6 py-4">
         <Pressable
           onPress={handleBack}
-          className="w-10 h-10 items-center justify-center rounded-full active:bg-background-secondary"
+          className="w-11 h-11 items-center justify-center rounded-full active:bg-background-secondary"
         >
-          <Text className="text-gray-400 text-2xl">←</Text>
+          <Icon name="arrow-back" size="lg" color="#9ca3af" />
         </Pressable>
         <Text className="text-xs font-semibold text-gray-400 tracking-wider uppercase">
           Step 5 of 6
@@ -87,7 +87,7 @@ export default function DailyTargetScreen() {
               <Text className="text-sm text-gray-400">of screen time</Text>
             </View>
             <View className="w-16 h-16 rounded-full bg-primary-500/20 items-center justify-center">
-              <Text className="text-3xl">📱</Text>
+              <Icon name="phone" size="xl" color="#00f5d4" />
             </View>
           </View>
         </View>

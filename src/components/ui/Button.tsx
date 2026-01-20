@@ -1,4 +1,5 @@
-import { Pressable, Text, ActivityIndicator, PressableProps } from 'react-native';
+import { Text, ActivityIndicator, PressableProps } from 'react-native';
+import { AnimatedPressable } from './AnimatedPressable';
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost';
 
@@ -10,15 +11,15 @@ interface ButtonProps extends Omit<PressableProps, 'children'> {
 
 const variantStyles = {
   primary: {
-    container: 'bg-primary-500 active:bg-primary-600',
+    container: 'bg-primary-500',
     text: 'text-black font-semibold',
   },
   secondary: {
-    container: 'bg-background-tertiary border border-border-default active:bg-background-secondary',
+    container: 'bg-background-tertiary border border-border-default',
     text: 'text-white font-semibold',
   },
   ghost: {
-    container: 'bg-transparent active:bg-background-tertiary',
+    container: 'bg-transparent',
     text: 'text-primary-500 font-semibold',
   },
 } as const;
@@ -34,11 +35,12 @@ export function Button({
   const isDisabled = disabled || isLoading;
 
   return (
-    <Pressable
+    <AnimatedPressable
       className={`h-14 rounded-xl items-center justify-center ${styles.container} ${
         isDisabled ? 'opacity-50' : ''
       }`}
       disabled={isDisabled}
+      haptic={isDisabled ? false : 'medium'}
       {...props}
     >
       {isLoading ? (
@@ -46,6 +48,6 @@ export function Button({
       ) : (
         <Text className={`text-base ${styles.text}`}>{children}</Text>
       )}
-    </Pressable>
+    </AnimatedPressable>
   );
 }

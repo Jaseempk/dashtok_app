@@ -1,5 +1,6 @@
 import { View, Text } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Icon } from '@/components/ui';
 import { OnboardingLayout, OnboardingHero, QuestionCard } from '@/features/onboarding/components';
 import { useOnboardingStore, PastAppIssue } from '@/features/onboarding/store/onboardingStore';
 
@@ -35,12 +36,14 @@ export default function PastAppsScreen() {
         fallbackContent={
           <View className="items-center">
             <Text className="text-5xl mb-2">🪦</Text>
-            <View className="flex-row gap-2 mt-2">
-              <Text className="text-2xl opacity-50">🏋️</Text>
-              <Text className="text-2xl opacity-50">🏃</Text>
-              <Text className="text-2xl opacity-50">🚴</Text>
+            <View className="flex-row gap-3 mt-2">
+              <Icon name="activity" size="xl" color="#6b7280" style={{ opacity: 0.5 }} />
+              <Icon name="run" size="xl" color="#6b7280" style={{ opacity: 0.5 }} />
+              <Icon name="walk" size="xl" color="#6b7280" style={{ opacity: 0.5 }} />
             </View>
-            <Text className="text-primary-500 text-3xl mt-2">😔</Text>
+            <View className="mt-3">
+              <Icon name="error" size="xl" color="#00f5d4" />
+            </View>
           </View>
         }
       />

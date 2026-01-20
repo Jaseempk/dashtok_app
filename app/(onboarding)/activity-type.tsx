@@ -1,7 +1,7 @@
 import { View, Text, ScrollView, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Button } from '@/components/ui';
+import { Button, Icon } from '@/components/ui';
 import { ActivityTypeCard } from '@/features/onboarding/components';
 import { useOnboardingStore } from '@/features/onboarding/store/onboardingStore';
 import { ACTIVITY_OPTIONS } from '@/features/onboarding/constants/content';
@@ -30,9 +30,9 @@ export default function ActivityTypeScreen() {
       <View className="flex-row items-center justify-between px-6 py-4">
         <Pressable
           onPress={handleBack}
-          className="w-10 h-10 items-center justify-center rounded-full active:bg-background-secondary"
+          className="w-11 h-11 items-center justify-center rounded-full active:bg-background-secondary"
         >
-          <Text className="text-gray-400 text-2xl">←</Text>
+          <Icon name="arrow-back" size="lg" color="#9ca3af" />
         </Pressable>
         <Text className="text-xs font-semibold text-gray-400 tracking-wider uppercase">
           Step 4 of 6

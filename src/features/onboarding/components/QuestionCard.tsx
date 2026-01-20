@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
-import { View, Text, Pressable } from 'react-native';
+import { View, Text } from 'react-native';
+import { AnimatedPressable, Icon } from '@/components/ui';
 
 interface QuestionCardProps {
   label: string;
@@ -21,9 +22,9 @@ export function QuestionCard({
   iconPosition = 'right',
 }: QuestionCardProps) {
   return (
-    <Pressable
+    <AnimatedPressable
       onPress={onPress}
-      className={`flex-row items-center gap-4 rounded-2xl border p-4 active:scale-[0.98] ${
+      className={`flex-row items-center gap-4 rounded-2xl border p-4 ${
         selected
           ? 'border-primary-500 bg-primary-500/10'
           : 'border-border-subtle bg-background-secondary'
@@ -66,10 +67,10 @@ export function QuestionCard({
             <View className="w-2.5 h-2.5 rounded-full bg-background-primary" />
           )}
           {selected && variant === 'checkbox' && (
-            <Text className="text-background-primary text-xs font-bold">✓</Text>
+            <Icon name="check" size="sm" color="#0a0f1a" />
           )}
         </View>
       )}
-    </Pressable>
+    </AnimatedPressable>
   );
 }

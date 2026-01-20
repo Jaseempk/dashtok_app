@@ -7,10 +7,12 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import Animated from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ProgressSteps } from './ProgressSteps';
-import { Button } from '@/components/ui';
+import { Button, Icon } from '@/components/ui';
+import { useFadeIn } from '@/lib/animations';
 
 interface OnboardingLayoutProps {
   children: ReactNode;
@@ -47,6 +49,7 @@ export function OnboardingLayout({
 }: OnboardingLayoutProps) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const fadeInStyle = useFadeIn({ duration: 350, translateY: 15 });
 
   return (
     <KeyboardAvoidingView
@@ -60,12 +63,12 @@ export function OnboardingLayout({
             {showBackButton ? (
               <Pressable
                 onPress={() => router.back()}
-                className="w-10 h-10 items-center justify-center rounded-full active:bg-background-secondary"
+                className="w-11 h-11 items-center justify-center rounded-full active:bg-background-secondary"
               >
-                <Text className="text-gray-400 text-2xl">←</Text>
+                <Icon name="arrow-back" size="lg" color="#9ca3af" />
               </Pressable>
             ) : (
-              <View className="w-10" />
+              <View className="w-11" />
             )}
 
             {showProgress && (
@@ -79,7 +82,7 @@ export function OnboardingLayout({
                 <Text className="text-primary-500 font-semibold text-sm">Skip</Text>
               </Pressable>
             ) : (
-              <View className="w-10" />
+              <View className="w-11" />
             )}
           </View>
 
@@ -87,14 +90,15 @@ export function OnboardingLayout({
         </View>
 
         {/* Content */}
-        <ScrollView
+        <Animated.ScrollView
           className="flex-1"
           contentContainerClassName="px-6 pb-32"
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
+          style={fadeInStyle}
         >
           {children}
-        </ScrollView>
+        </Animated.ScrollView>
 
         {/* Footer */}
         {!hideFooter && (

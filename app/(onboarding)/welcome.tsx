@@ -1,11 +1,15 @@
 import { View, Text, Pressable } from 'react-native';
+import Animated from 'react-native-reanimated';
 import { useRouter, Link } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Button } from '@/components/ui';
+import { Button, Icon } from '@/components/ui';
+import { useFadeIn } from '@/lib/animations';
 
 export default function WelcomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const heroFadeIn = useFadeIn({ duration: 500, translateY: 30 });
+  const contentFadeIn = useFadeIn({ duration: 400, delay: 200, translateY: 20 });
 
   const handleContinue = () => {
     router.push('/(onboarding)/consistency');
@@ -24,17 +28,17 @@ export default function WelcomeScreen() {
       />
 
       {/* Hero Image Placeholder */}
-      <View className="flex-1 items-center justify-center px-6 pt-8">
+      <Animated.View style={heroFadeIn} className="flex-1 items-center justify-center px-6 pt-8">
         <View className="w-full max-w-sm aspect-[3/4] rounded-3xl bg-background-secondary border border-border-subtle overflow-hidden items-center justify-center">
           <View className="items-center">
-            <Text className="text-6xl mb-4">🏃</Text>
+            <Icon name="run" size={64} color="#00f5d4" style={{ marginBottom: 16 }} />
             <Text className="text-primary-500 text-lg font-semibold">Move to Earn</Text>
           </View>
         </View>
-      </View>
+      </Animated.View>
 
       {/* Content */}
-      <View className="px-6 pb-4">
+      <Animated.View style={contentFadeIn} className="px-6 pb-4">
         <Text className="text-4xl font-extrabold text-white text-center leading-tight mb-3">
           What if screen time was something you{' '}
           <Text className="text-primary-500 italic">earned?</Text>
@@ -55,7 +59,7 @@ export default function WelcomeScreen() {
             </Text>
           </Pressable>
         </Link>
-      </View>
+      </Animated.View>
     </View>
   );
 }

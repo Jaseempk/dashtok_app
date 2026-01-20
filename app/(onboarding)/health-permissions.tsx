@@ -1,7 +1,7 @@
 import { View, Text, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Button } from '@/components/ui';
+import { Button, Icon } from '@/components/ui';
 import { PermissionRow } from '@/features/onboarding/components';
 import { useOnboardingStore } from '@/features/onboarding/store/onboardingStore';
 import { HEALTH_PERMISSIONS } from '@/features/onboarding/constants/content';
@@ -35,9 +35,9 @@ export default function HealthPermissionsScreen() {
       <View className="flex-row items-center justify-between px-6 py-4">
         <Pressable
           onPress={handleBack}
-          className="w-10 h-10 items-center justify-center rounded-full active:bg-background-secondary"
+          className="w-11 h-11 items-center justify-center rounded-full active:bg-background-secondary"
         >
-          <Text className="text-gray-400 text-2xl">←</Text>
+          <Icon name="arrow-back" size="lg" color="#9ca3af" />
         </Pressable>
         <Text className="text-xs font-semibold text-gray-400 tracking-wider uppercase">
           Step 6 of 6
@@ -51,7 +51,7 @@ export default function HealthPermissionsScreen() {
         {/* Hero Icon */}
         <View className="items-center mb-6">
           <View className="w-24 h-24 rounded-3xl bg-primary-500/10 border border-primary-500/30 items-center justify-center">
-            <Text className="text-5xl">❤️</Text>
+            <Icon name="heart" size="3xl" color="#00f5d4" />
           </View>
         </View>
 
@@ -78,7 +78,7 @@ export default function HealthPermissionsScreen() {
         {/* Privacy Note */}
         <View className="mt-6 p-4 rounded-xl bg-background-secondary/50">
           <View className="flex-row items-center gap-2 mb-1">
-            <Text className="text-primary-500">🔒</Text>
+            <Icon name="lock" size="sm" color="#00f5d4" />
             <Text className="text-sm font-semibold text-white">Your data stays private</Text>
           </View>
           <Text className="text-xs text-gray-400 leading-relaxed">

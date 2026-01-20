@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { View, Text } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Icon } from '@/components/ui';
 import { CircularProgress, AnalysisStep } from '@/features/onboarding/components';
 import { useOnboardingStore } from '@/features/onboarding/store/onboardingStore';
 
@@ -87,8 +88,8 @@ export default function AnalyzingScreen() {
 
       {/* Footer */}
       <View className="absolute bottom-0 left-0 right-0 items-center pb-8">
-        <View className="flex-row items-center gap-2">
-          <Text className="text-gray-500 text-xs">🔒</Text>
+        <View className="flex-row items-center gap-1.5">
+          <Icon name="lock" size="xs" color="#6b7280" />
           <Text className="text-gray-500 text-xs tracking-wider uppercase">
             Secure Data Encryption Active
           </Text>

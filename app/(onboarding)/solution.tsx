@@ -1,7 +1,7 @@
 import { View, Text } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Button } from '@/components/ui';
+import { Button, Icon } from '@/components/ui';
 import { SOLUTION_PILLARS } from '@/features/onboarding/constants/content';
 
 export default function SolutionScreen() {
@@ -36,7 +36,7 @@ export default function SolutionScreen() {
             >
               {/* Icon */}
               <View className="w-14 h-14 rounded-full bg-primary-500/10 border border-primary-500/30 items-center justify-center">
-                <Text className="text-2xl">{pillar.icon}</Text>
+                <Icon name={pillar.icon} size="xl" color="#00f5d4" />
               </View>
 
               {/* Text */}

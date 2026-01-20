@@ -1,9 +1,11 @@
 import { View, Text, ScrollView, Pressable } from 'react-native';
+import Animated from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Button } from '@/components/ui';
+import { Button, Icon } from '@/components/ui';
 import { useOnboardingStore } from '@/features/onboarding/store/onboardingStore';
 import { PROFILE_CONTENT } from '@/features/onboarding/constants/content';
+import { useFadeIn } from '@/lib/animations';
 
 export default function ReportScreen() {
   const router = useRouter();
@@ -11,6 +13,11 @@ export default function ReportScreen() {
   const { profileType } = useOnboardingStore();
 
   const profile = PROFILE_CONTENT[profileType ?? 'inconsistent-achiever'];
+
+  // Staggered card animations
+  const profileCardStyle = useFadeIn({ duration: 400, translateY: 25 });
+  const successCardStyle = useFadeIn({ duration: 400, delay: 150, translateY: 25 });
+  const trajectoryCardStyle = useFadeIn({ duration: 400, delay: 300, translateY: 25 });
 
   const handleContinue = () => {
     router.push('/(onboarding)/solution');
@@ -29,9 +36,9 @@ export default function ReportScreen() {
       <View className="flex-row items-center justify-between px-6 py-4">
         <Pressable
           onPress={() => router.back()}
-          className="w-10 h-10 items-center justify-center rounded-full active:bg-background-secondary"
+          className="w-11 h-11 items-center justify-center rounded-full active:bg-background-secondary"
         >
-          <Text className="text-gray-400 text-2xl">←</Text>
+          <Icon name="arrow-back" size="lg" color="#9ca3af" />
         </Pressable>
         <Text className="text-xs font-semibold text-gray-400 tracking-wider uppercase">
           Your Movement Profile
@@ -47,7 +54,7 @@ export default function ReportScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Profile Card */}
-        <View className="rounded-2xl bg-background-secondary border border-border-subtle p-6 mb-6">
+        <Animated.View style={profileCardStyle} className="rounded-2xl bg-background-secondary border border-border-subtle p-6 mb-6">
           {/* Badge */}
           <View className="flex-row items-center gap-2 mb-4">
             <View className="w-2 h-2 rounded-full bg-primary-500" />
@@ -58,7 +65,7 @@ export default function ReportScreen() {
 
           {/* Profile Icon */}
           <View className="w-20 h-20 rounded-2xl bg-background-tertiary items-center justify-center mb-4">
-            <Text className="text-4xl">🧠</Text>
+            <Icon name="sparkles" size="3xl" color="#00f5d4" />
           </View>
 
           {/* Profile Title */}
@@ -73,10 +80,10 @@ export default function ReportScreen() {
           <Text className="text-base text-gray-400 leading-relaxed">
             {profile.description}
           </Text>
-        </View>
+        </Animated.View>
 
         {/* Success Rate Card */}
-        <View className="rounded-2xl bg-background-secondary border border-border-subtle p-5 mb-4">
+        <Animated.View style={successCardStyle} className="rounded-2xl bg-background-secondary border border-border-subtle p-5 mb-4">
           <Text className="text-xs text-gray-500 tracking-wider uppercase mb-1">
             Success Probability
           </Text>
@@ -89,10 +96,10 @@ export default function ReportScreen() {
               <Text className="text-primary-500 font-medium">reward-based systems</Text>.
             </Text>
           </View>
-        </View>
+        </Animated.View>
 
         {/* Trajectory Card */}
-        <View className="rounded-2xl bg-background-secondary border border-border-subtle p-5">
+        <Animated.View style={trajectoryCardStyle} className="rounded-2xl bg-background-secondary border border-border-subtle p-5">
           <Text className="text-xs text-gray-500 tracking-wider uppercase mb-2">
             Projected Trajectory
           </Text>
@@ -100,9 +107,10 @@ export default function ReportScreen() {
             <Text className="text-2xl font-bold text-white">
               {profile.trajectory}
             </Text>
-            <View className="px-3 py-1 rounded-full bg-primary-500/20">
+            <View className="flex-row items-center gap-1.5 px-3 py-1 rounded-full bg-primary-500/20">
+              <Icon name="chart" size="sm" color="#00f5d4" />
               <Text className="text-primary-500 text-sm font-semibold">
-                📈 {profile.trajectoryGain}
+                {profile.trajectoryGain}
               </Text>
             </View>
           </View>
@@ -122,7 +130,7 @@ export default function ReportScreen() {
             <Text className="text-xs text-gray-500">WEEK 8</Text>
             <Text className="text-xs text-gray-500">GOAL</Text>
           </View>
-        </View>
+        </Animated.View>
       </ScrollView>
 
       {/* Footer */}

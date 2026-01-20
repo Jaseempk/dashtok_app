@@ -1,4 +1,5 @@
-import { View, Text, Pressable } from 'react-native';
+import { View, Text } from 'react-native';
+import { AnimatedPressable, Icon } from '@/components/ui';
 import { ActivityType } from '../store/onboardingStore';
 
 interface ActivityTypeCardProps {
@@ -20,9 +21,9 @@ export function ActivityTypeCard({
   onPress,
 }: ActivityTypeCardProps) {
   return (
-    <Pressable
+    <AnimatedPressable
       onPress={onPress}
-      className={`rounded-2xl border overflow-hidden active:scale-[0.98] ${
+      className={`rounded-2xl border overflow-hidden ${
         selected
           ? 'border-primary-500 bg-primary-500/5'
           : 'border-border-subtle bg-background-secondary'
@@ -50,7 +51,7 @@ export function ActivityTypeCard({
             }`}
           >
             {selected && (
-              <Text className="text-background-primary text-xs font-bold">✓</Text>
+              <Icon name="check" size="sm" color="#0a0f1a" />
             )}
           </View>
         </View>
@@ -63,13 +64,13 @@ export function ActivityTypeCard({
         </View>
 
         {/* Reward */}
-        <View className="flex-row items-center gap-1">
-          <Text className="text-gray-400">⏱️</Text>
+        <View className="flex-row items-center gap-1.5">
+          <Icon name="time" size="sm" color="#9ca3af" />
           <Text className="text-gray-400 text-sm">
             Earn <Text className="text-primary-500 font-medium">{reward}</Text> screen time
           </Text>
         </View>
       </View>
-    </Pressable>
+    </AnimatedPressable>
   );
 }

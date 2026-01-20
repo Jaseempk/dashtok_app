@@ -1,8 +1,16 @@
 import { useState, useEffect } from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withDelay,
+} from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Button } from '@/components/ui';
+import * as Localization from 'expo-localization';
+import * as Haptics from 'expo-haptics';
+import { Button, Icon } from '@/components/ui';
 import { useOnboardingStore } from '@/features/onboarding/store/onboardingStore';
 import { api } from '@/lib/api/client';
 
@@ -15,6 +23,22 @@ export default function CompleteScreen() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const { activityType, dailyTargetKm, reset } = useOnboardingStore();
+
+  // Success animation values
+  const successScale = useSharedValue(0.8);
+  const successOpacity = useSharedValue(0);
+  const cardTranslateY = useSharedValue(30);
+  const cardOpacity = useSharedValue(0);
+
+  const successIconStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: successScale.value }],
+    opacity: successOpacity.value,
+  }));
+
+  const cardStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: cardTranslateY.value }],
+    opacity: cardOpacity.value,
+  }));
 
   // Calculate screen time reward based on activity and distance
   const getScreenTimeReward = () => {
@@ -37,12 +61,23 @@ export default function CompleteScreen() {
         rewardMinutes: getScreenTimeReward(),
       });
 
-      // Mark onboarding as complete
+      // Mark onboarding as complete and set timezone
+      const timezone = Localization.getCalendars()[0]?.timeZone ?? 'UTC';
       await api.patch('/users/me', {
         onboardingCompleted: true,
+        timezone,
       });
 
       setSubmitState('success');
+
+      // Trigger success haptic
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
+      // Trigger success animations
+      successScale.value = withSpring(1, { damping: 12, stiffness: 100 });
+      successOpacity.value = withSpring(1);
+      cardTranslateY.value = withDelay(200, withSpring(0, { damping: 15 }));
+      cardOpacity.value = withDelay(200, withSpring(1));
 
       // Reset onboarding state
       reset();
@@ -80,20 +115,32 @@ export default function CompleteScreen() {
 
         {submitState === 'success' && (
           <>
-            {/* Success Animation Placeholder */}
-            <View className="w-32 h-32 rounded-full bg-primary-500/20 items-center justify-center mb-6">
-              <Text className="text-6xl">🎉</Text>
-            </View>
+            {/* Success Animation */}
+            <Animated.View
+              style={successIconStyle}
+              className="w-32 h-32 rounded-full bg-primary-500/20 items-center justify-center mb-6"
+            >
+              <Icon name="check-circle" size={64} color="#00f5d4" />
+            </Animated.View>
 
-            <Text className="text-4xl font-bold text-white text-center mb-3">
+            <Animated.Text
+              style={successIconStyle}
+              className="text-4xl font-bold text-white text-center mb-3"
+            >
               You're all set!
-            </Text>
-            <Text className="text-base text-gray-400 text-center mb-2">
+            </Animated.Text>
+            <Animated.Text
+              style={successIconStyle}
+              className="text-base text-gray-400 text-center mb-2"
+            >
               Your first goal is ready:
-            </Text>
+            </Animated.Text>
 
             {/* Goal Summary Card */}
-            <View className="w-full rounded-2xl bg-background-secondary border border-primary-500/30 p-6 mt-4 mb-8">
+            <Animated.View
+              style={cardStyle}
+              className="w-full rounded-2xl bg-background-secondary border border-primary-500/30 p-6 mt-4 mb-8"
+            >
               <View className="flex-row items-center justify-between mb-4">
                 <View>
                   <Text className="text-sm text-gray-500 uppercase tracking-wider mb-1">
@@ -104,16 +151,18 @@ export default function CompleteScreen() {
                   </Text>
                 </View>
                 <View className="w-16 h-16 rounded-full bg-primary-500/20 items-center justify-center">
-                  <Text className="text-3xl">
-                    {activityType === 'run' ? '🏃' : activityType === 'walk' ? '🚶' : '💪'}
-                  </Text>
+                  <Icon
+                    name={activityType === 'run' ? 'run' : activityType === 'walk' ? 'walk' : 'activity'}
+                    size="xl"
+                    color="#00f5d4"
+                  />
                 </View>
               </View>
 
               <View className="h-px bg-border-subtle mb-4" />
 
               <View className="flex-row items-center gap-2">
-                <Text className="text-primary-500">📱</Text>
+                <Icon name="phone" size="sm" color="#00f5d4" />
                 <Text className="text-gray-400">
                   Earn{' '}
                   <Text className="text-primary-500 font-semibold">
@@ -122,18 +171,18 @@ export default function CompleteScreen() {
                   of screen time
                 </Text>
               </View>
-            </View>
+            </Animated.View>
 
-            <Text className="text-sm text-gray-500 text-center">
+            <Animated.Text style={cardStyle} className="text-sm text-gray-500 text-center">
               Complete your first activity to{'\n'}start earning screen time!
-            </Text>
+            </Animated.Text>
           </>
         )}
 
         {submitState === 'error' && (
           <>
             <View className="w-24 h-24 rounded-full bg-red-500/20 items-center justify-center mb-6">
-              <Text className="text-5xl">😔</Text>
+              <Icon name="error" size="3xl" color="#ef4444" />
             </View>
 
             <Text className="text-2xl font-bold text-white text-center mb-2">

@@ -1,4 +1,5 @@
 import { View, Text, ActivityIndicator } from 'react-native';
+import { Icon } from '@/components/ui';
 
 type StepStatus = 'pending' | 'loading' | 'complete';
 
@@ -21,7 +22,7 @@ export function AnalysisStep({ label, status, stepNumber }: AnalysisStepProps) {
         )}
         {status === 'complete' && (
           <View className="w-6 h-6 rounded-full bg-primary-500 items-center justify-center">
-            <Text className="text-background-primary text-xs font-bold">✓</Text>
+            <Icon name="check" size="sm" color="#0a0f1a" />
           </View>
         )}
       </View>

@@ -1,7 +1,7 @@
 import { View, Text, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Button } from '@/components/ui';
+import { Button, Icon } from '@/components/ui';
 import { useOnboardingStore } from '@/features/onboarding/store/onboardingStore';
 import { NOTIFICATION_TYPES } from '@/features/onboarding/constants/content';
 
@@ -33,9 +33,9 @@ export default function NotificationsScreen() {
       <View className="flex-row items-center justify-between px-6 py-4">
         <Pressable
           onPress={handleBack}
-          className="w-10 h-10 items-center justify-center rounded-full active:bg-background-secondary"
+          className="w-11 h-11 items-center justify-center rounded-full active:bg-background-secondary"
         >
-          <Text className="text-gray-400 text-2xl">←</Text>
+          <Icon name="arrow-back" size="lg" color="#9ca3af" />
         </Pressable>
         <View className="w-10" />
         <Pressable onPress={handleSkip}>
@@ -47,7 +47,7 @@ export default function NotificationsScreen() {
         {/* Hero Icon */}
         <View className="items-center mb-6">
           <View className="w-24 h-24 rounded-3xl bg-primary-500/10 border border-primary-500/30 items-center justify-center">
-            <Text className="text-5xl">🔔</Text>
+            <Icon name="bell" size="3xl" color="#00f5d4" />
           </View>
         </View>
 
@@ -69,7 +69,7 @@ export default function NotificationsScreen() {
             >
               {/* Icon */}
               <View className="w-10 h-10 rounded-xl bg-background-tertiary items-center justify-center">
-                <Text className="text-lg">{notification.icon}</Text>
+                <Icon name={notification.icon} size="md" color="#00f5d4" />
               </View>
 
               {/* Content */}
