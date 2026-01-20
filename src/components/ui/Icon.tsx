@@ -48,6 +48,9 @@ const ICON_MAP = {
   'person-filled': 'person',
   'hourglass': 'hourglass-outline',
   'sparkles': 'sparkles',
+  'bulb': 'bulb-outline',
+  'chevron-down': 'chevron-down',
+  'chevron-up': 'chevron-up',
 
   // Tab bar
   'home': 'home',
