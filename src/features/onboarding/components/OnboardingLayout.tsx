@@ -1,0 +1,133 @@
+import { ReactNode } from 'react';
+import {
+  View,
+  Text,
+  ScrollView,
+  Pressable,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
+import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ProgressSteps } from './ProgressSteps';
+import { Button } from '@/components/ui';
+
+interface OnboardingLayoutProps {
+  children: ReactNode;
+  showBackButton?: boolean;
+  showProgress?: boolean;
+  currentStep?: number;
+  totalSteps?: number;
+  showSkip?: boolean;
+  onSkip?: () => void;
+  primaryButtonText?: string;
+  primaryButtonDisabled?: boolean;
+  primaryButtonLoading?: boolean;
+  onPrimaryPress?: () => void;
+  secondaryButtonText?: string;
+  onSecondaryPress?: () => void;
+  hideFooter?: boolean;
+}
+
+export function OnboardingLayout({
+  children,
+  showBackButton = true,
+  showProgress = false,
+  currentStep = 1,
+  totalSteps = 6,
+  showSkip = false,
+  onSkip,
+  primaryButtonText = 'Continue',
+  primaryButtonDisabled = false,
+  primaryButtonLoading = false,
+  onPrimaryPress,
+  secondaryButtonText,
+  onSecondaryPress,
+  hideFooter = false,
+}: OnboardingLayoutProps) {
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
+
+  return (
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      className="flex-1 bg-background-primary"
+    >
+      <View className="flex-1" style={{ paddingTop: insets.top }}>
+        {/* Header */}
+        <View className="px-6 pt-4 pb-2">
+          <View className="flex-row items-center justify-between mb-4">
+            {showBackButton ? (
+              <Pressable
+                onPress={() => router.back()}
+                className="w-10 h-10 items-center justify-center rounded-full active:bg-background-secondary"
+              >
+                <Text className="text-gray-400 text-2xl">←</Text>
+              </Pressable>
+            ) : (
+              <View className="w-10" />
+            )}
+
+            {showProgress && (
+              <Text className="text-sm font-medium text-primary-500 tracking-wide">
+                Step {currentStep} of {totalSteps}
+              </Text>
+            )}
+
+            {showSkip ? (
+              <Pressable onPress={onSkip} className="px-2 py-1">
+                <Text className="text-primary-500 font-semibold text-sm">Skip</Text>
+              </Pressable>
+            ) : (
+              <View className="w-10" />
+            )}
+          </View>
+
+          {showProgress && <ProgressSteps current={currentStep} total={totalSteps} />}
+        </View>
+
+        {/* Content */}
+        <ScrollView
+          className="flex-1"
+          contentContainerClassName="px-6 pb-32"
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          {children}
+        </ScrollView>
+
+        {/* Footer */}
+        {!hideFooter && (
+          <View
+            className="absolute bottom-0 left-0 right-0 px-6 pt-4 bg-background-primary"
+            style={{ paddingBottom: Math.max(insets.bottom, 16) + 8 }}
+          >
+            {/* Gradient overlay */}
+            <View className="absolute top-0 left-0 right-0 h-8 -translate-y-full bg-gradient-to-t from-background-primary to-transparent" />
+
+            {onPrimaryPress && (
+              <Button
+                onPress={onPrimaryPress}
+                disabled={primaryButtonDisabled}
+                isLoading={primaryButtonLoading}
+              >
+                {primaryButtonText}
+              </Button>
+            )}
+
+            {secondaryButtonText && onSecondaryPress && (
+              <Pressable
+                onPress={onSecondaryPress}
+                className="mt-3 py-2 items-center"
+              >
+                <Text className="text-gray-400 text-sm font-medium">
+                  {secondaryButtonText}
+                </Text>
+              </Pressable>
+            )}
+          </View>
+        )}
+      </View>
+    </KeyboardAvoidingView>
+  );
+}

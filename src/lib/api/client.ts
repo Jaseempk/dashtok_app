@@ -19,6 +19,7 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
   const { method = 'GET', body, headers = {} } = options;
 
   const url = `${config.apiUrl}${endpoint}`;
+  console.log(`[API] ${method} ${url}`);
 
   const requestHeaders: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -28,6 +29,7 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
   // Add auth token if available
   if (getAuthToken) {
     const token = await getAuthToken();
+    console.log('[API] Token from Clerk:', token ? `${token.substring(0, 50)}...` : 'null');
     if (token) {
       requestHeaders['Authorization'] = `Bearer ${token}`;
     }
