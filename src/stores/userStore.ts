@@ -7,13 +7,20 @@ interface UserPreferences {
   theme: 'dark' | 'light' | 'system';
 }
 
+interface NotificationPreferences {
+  dailyReminders: boolean;
+  streakAlerts: boolean;
+}
+
 interface UserState {
   onboardingCompleted: boolean;
   preferences: UserPreferences;
+  notifications: NotificationPreferences;
 
   // Actions
   setOnboardingCompleted: (completed: boolean) => void;
   setPreference: <K extends keyof UserPreferences>(key: K, value: UserPreferences[K]) => void;
+  setNotification: <K extends keyof NotificationPreferences>(key: K, value: boolean) => void;
   reset: () => void;
 }
 
@@ -22,6 +29,10 @@ const initialState = {
   preferences: {
     units: 'km' as const,
     theme: 'dark' as const,
+  },
+  notifications: {
+    dailyReminders: true,
+    streakAlerts: true,
   },
 };
 
@@ -35,6 +46,11 @@ export const useUserStore = create<UserState>()(
       setPreference: (key, value) =>
         set((state) => ({
           preferences: { ...state.preferences, [key]: value },
+        })),
+
+      setNotification: (key, value) =>
+        set((state) => ({
+          notifications: { ...state.notifications, [key]: value },
         })),
 
       reset: () => set(initialState),
