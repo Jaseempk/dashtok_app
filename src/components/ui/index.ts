@@ -6,3 +6,4 @@ export { Input } from './Input';
 export { Card } from './Card';
 export { Slider } from './Slider';
 export { Toggle } from './Toggle';
+export { ProgressRing, MultiProgressRing } from './ProgressRing';
