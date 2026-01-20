@@ -11,6 +11,8 @@ const ICON_MAP = {
   'check': 'checkmark',
   'check-circle': 'checkmark-circle',
   'add': 'add',
+  'edit': 'create-outline',
+  'location': 'location',
 
   // Activities
   'run': 'fitness',
