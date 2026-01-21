@@ -1,6 +1,9 @@
 import { Stack } from 'expo-router';
+import { useNotifications } from '@/features/notifications';
 
 export default function AppLayout() {
+  // Set up notification listeners (foreground, tap, cold start)
+  useNotifications();
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="(tabs)" />

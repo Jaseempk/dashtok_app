@@ -1,13 +1,18 @@
-import { View, Text, ScrollView, Alert, ActionSheetIOS, Platform, Modal, TextInput, Pressable, KeyboardAvoidingView } from 'react-native';
+import { View, Text, ScrollView, Alert, ActionSheetIOS, Platform, Modal, TextInput, Pressable, KeyboardAvoidingView, Linking } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 import { useAuth } from '@/features/auth';
 import { useProfile, useUpdateProfile, useDeleteAccount } from '@/features/user';
 import { useUserStore } from '@/stores/userStore';
 import { useOnboardingStore } from '@/features/onboarding/store/onboardingStore';
 import { useHealthPermissions, useHealthSync } from '@/features/health';
+import {
+  useNotificationPermission,
+  useNotificationSettings,
+  notificationService,
+} from '@/features/notifications';
 import {
   SettingsSection,
   SettingsRow,
@@ -35,8 +40,28 @@ export default function ProfileScreen() {
   // Health data
   const healthConnected = useOnboardingStore((state) => state.healthConnected);
   const setHealthConnected = useOnboardingStore((state) => state.setHealthConnected);
-  const { request: requestHealthPermissions, isAvailable: isHealthAvailable } = useHealthPermissions();
+  const { status: healthPermissionStatus, request: requestHealthPermissions, isAvailable: isHealthAvailable } = useHealthPermissions();
   const { sync: syncHealth, isSyncing, lastSyncedAt } = useHealthSync();
+
+  // Notifications
+  const {
+    status: notificationPermissionStatus,
+    requestPermission: requestNotificationPermission,
+    isLoading: isRequestingNotification,
+  } = useNotificationPermission();
+  const {
+    preferences: notificationPrefs,
+    updatePreference: updateNotificationPref,
+    syncFromServer,
+    isUpdating: isUpdatingNotifications,
+  } = useNotificationSettings();
+
+  // Sync notification preferences from server when profile loads
+  useEffect(() => {
+    if (profile) {
+      syncFromServer(profile as any);
+    }
+  }, [profile, syncFromServer]);
 
   // Dialog states
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
@@ -116,11 +141,32 @@ export default function ProfileScreen() {
         // Sync immediately after connecting
         syncHealth();
       } else {
-        Alert.alert('Permission Denied', 'Health data access was denied. Please enable it in Settings.');
+        // Permission not granted - guide user to iOS Settings
+        Alert.alert(
+          'Health Access Required',
+          Platform.OS === 'ios'
+            ? 'To sync your workouts automatically, please enable Health access in iOS Settings:\n\nSettings → Health → Data Access & Devices → Dashtok'
+            : 'To sync your workouts automatically, please enable Health Connect access in Settings.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Open Settings', onPress: () => Linking.openSettings() },
+          ]
+        );
       }
     } else {
-      // Disconnect health (just update local state)
-      setHealthConnected(false);
+      // Disconnect health - show confirmation first
+      Alert.alert(
+        'Disable Health Sync?',
+        'Automatic syncing of your workouts and steps will stop. You can re-enable it anytime.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Disable',
+            style: 'destructive',
+            onPress: () => setHealthConnected(false),
+          },
+        ]
+      );
     }
   }, [isHealthAvailable, requestHealthPermissions, setHealthConnected, syncHealth]);
 
@@ -218,20 +264,84 @@ export default function ProfileScreen() {
 
         {/* Notifications Section */}
         <SettingsSection title="Notifications">
+          {/* Permission Status */}
+          {notificationPermissionStatus !== 'granted' && (
+            <>
+              <SettingsRow
+                icon="bell"
+                iconColor="#f59e0b"
+                label="Enable Notifications"
+                subtitle={
+                  notificationPermissionStatus === 'denied'
+                    ? 'Tap to open Settings'
+                    : 'Get reminders and alerts'
+                }
+                onPress={async () => {
+                  if (notificationPermissionStatus === 'denied') {
+                    // Open app settings to enable notifications
+                    Linking.openSettings();
+                  } else {
+                    const granted = await requestNotificationPermission();
+                    if (granted) {
+                      Alert.alert('Notifications Enabled', 'You will now receive reminders and alerts.');
+                    }
+                  }
+                }}
+                disabled={isRequestingNotification}
+              />
+              <View className="h-px bg-border-subtle mx-4" />
+            </>
+          )}
+
+          {/* Notification Toggles (only show if permission granted) */}
+          {notificationPermissionStatus === 'granted' && (
+            <>
+              <SettingsToggleRow
+                icon="notifications"
+                iconColor="#f59e0b"
+                label="Notifications Enabled"
+                value={notificationPrefs.notificationsEnabled}
+                onValueChange={async (value) => {
+                  if (!value) {
+                    // Disabling - remove push token from server
+                    await notificationService.removeTokenFromServer();
+                  }
+                  updateNotificationPref('notificationsEnabled', value);
+                }}
+                disabled={isUpdatingNotifications}
+              />
+              <View className="h-px bg-border-subtle mx-4" />
+            </>
+          )}
+
           <SettingsToggleRow
-            icon="bell"
+            icon="sunny"
             iconColor="#f59e0b"
             label="Daily Reminders"
-            value={notifications.dailyReminders}
-            onValueChange={(value) => setNotification('dailyReminders', value)}
+            subtitle="Morning motivation at 8 AM"
+            value={notificationPrefs.dailyReminderEnabled}
+            onValueChange={(value) => updateNotificationPref('dailyReminderEnabled', value)}
+            disabled={isUpdatingNotifications || !notificationPrefs.notificationsEnabled}
           />
           <View className="h-px bg-border-subtle mx-4" />
           <SettingsToggleRow
             icon="flame"
             iconColor={colors.secondary[500]}
             label="Streak Alerts"
-            value={notifications.streakAlerts}
-            onValueChange={(value) => setNotification('streakAlerts', value)}
+            subtitle="Evening reminder if goal not met"
+            value={notificationPrefs.streakAlertsEnabled}
+            onValueChange={(value) => updateNotificationPref('streakAlertsEnabled', value)}
+            disabled={isUpdatingNotifications || !notificationPrefs.notificationsEnabled}
+          />
+          <View className="h-px bg-border-subtle mx-4" />
+          <SettingsToggleRow
+            icon="stats-chart"
+            iconColor="#8b5cf6"
+            label="Weekly Summary"
+            subtitle="Sunday progress report"
+            value={notificationPrefs.weeklySummaryEnabled}
+            onValueChange={(value) => updateNotificationPref('weeklySummaryEnabled', value)}
+            disabled={isUpdatingNotifications || !notificationPrefs.notificationsEnabled}
           />
         </SettingsSection>
 

@@ -6,6 +6,7 @@ interface SettingsRowProps {
   icon: IconName;
   iconColor?: string;
   label: string;
+  subtitle?: string;
   value?: string;
   onPress?: () => void;
   showChevron?: boolean;
@@ -17,6 +18,7 @@ export function SettingsRow({
   icon,
   iconColor,
   label,
+  subtitle,
   value,
   onPress,
   showChevron = true,
@@ -37,10 +39,17 @@ export function SettingsRow({
         <Icon name={icon} size="md" color={iconColor ?? defaultIconColor} />
       </View>
 
-      {/* Label */}
-      <Text className={`flex-1 text-base ${textColor} ${disabled ? 'opacity-50' : ''}`}>
-        {label}
-      </Text>
+      {/* Label & Subtitle */}
+      <View className="flex-1">
+        <Text className={`text-base ${textColor} ${disabled ? 'opacity-50' : ''}`}>
+          {label}
+        </Text>
+        {subtitle && (
+          <Text className={`text-xs text-gray-500 mt-0.5 ${disabled ? 'opacity-50' : ''}`}>
+            {subtitle}
+          </Text>
+        )}
+      </View>
 
       {/* Value */}
       {value && (

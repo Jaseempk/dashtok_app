@@ -63,6 +63,13 @@ const ICON_MAP = {
   'stats': 'stats-chart',
   'stats-outline': 'stats-chart-outline',
 
+  // Notifications
+  'notifications': 'notifications',
+  'notifications-outline': 'notifications-outline',
+  'sunny': 'sunny-outline',
+  'flash': 'flash-outline',
+  'stats-chart': 'stats-chart-outline',
+
   // Activities
   'trash': 'trash-outline',
   'filter': 'options-outline',

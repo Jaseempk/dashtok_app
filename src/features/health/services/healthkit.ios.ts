@@ -81,13 +81,13 @@ class HealthKitService implements HealthService {
 
     try {
       // v8 API: pass array directly as first argument
+      // Note: requestAuthorization() shows the iOS permission modal (if not already shown)
+      // It does NOT throw on denial - it returns silently regardless of user's choice
       await requestAuthorization([...READ_PERMISSIONS]);
 
-      this.authorized = true;
-      return {
-        status: 'granted',
-        permissions: { steps: true, distance: true, workouts: true },
-      };
+      // Check actual permission status after requesting
+      // iOS only shows the modal once per app install, so we verify what the user chose
+      return this.checkPermissions();
     } catch (error) {
       console.error('[HealthKit] requestPermissions error:', error);
       return {
