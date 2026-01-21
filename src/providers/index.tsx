@@ -5,6 +5,7 @@ import { tokenCache } from '@/lib/storage/secureStore';
 import { config } from '@/constants/config';
 import { AuthGuard } from '@/features/auth';
 import { queryClient } from '@/lib/query';
+import { HealthSyncProvider } from '@/features/health';
 
 interface ProvidersProps {
   children: ReactNode;
@@ -23,7 +24,9 @@ export function Providers({ children }: ProvidersProps) {
       <ClerkLoaded>
         <QueryClientProvider client={queryClient}>
           <AuthGuard>
-            {children}
+            <HealthSyncProvider>
+              {children}
+            </HealthSyncProvider>
           </AuthGuard>
         </QueryClientProvider>
       </ClerkLoaded>

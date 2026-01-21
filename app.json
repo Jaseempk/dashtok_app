@@ -57,7 +57,15 @@
         {
           "faceIDPermission": "Allow Dashtok to use Face ID for secure authentication."
         }
-      ]
+      ],
+      [
+        "@kingstinct/react-native-healthkit",
+        {
+          "NSHealthShareUsageDescription": "Dashtok needs access to your health data to track your activities and reward your movement.",
+          "NSHealthUpdateUsageDescription": "Dashtok needs access to update your health data."
+        }
+      ],
+      "react-native-health-connect"
     ],
     "experiments": {
       "typedRoutes": true

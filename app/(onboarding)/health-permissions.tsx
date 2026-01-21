@@ -1,21 +1,68 @@
-import { View, Text, Pressable } from 'react-native';
+import { useState } from 'react';
+import { View, Text, Pressable, Alert, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Icon } from '@/components/ui';
 import { PermissionRow } from '@/features/onboarding/components';
 import { useOnboardingStore } from '@/features/onboarding/store/onboardingStore';
 import { HEALTH_PERMISSIONS } from '@/features/onboarding/constants/content';
+import { useHealthPermissions } from '@/features/health';
 
 export default function HealthPermissionsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { setHealthConnected } = useOnboardingStore();
+  const { request, isAvailable, isLoading } = useHealthPermissions();
+  const [isRequesting, setIsRequesting] = useState(false);
 
   const handleConnect = async () => {
-    // TODO: Implement actual HealthKit/Health Connect permission request
-    // For now, we simulate success
-    setHealthConnected(true);
-    router.push('/(onboarding)/notifications');
+    setIsRequesting(true);
+    try {
+      if (!isAvailable) {
+        Alert.alert(
+          'Health Data Unavailable',
+          Platform.OS === 'ios'
+            ? 'Apple Health is not available on this device. You can still log activities manually.'
+            : 'Health Connect is not available on this device. You can still log activities manually.',
+          [
+            { text: 'Continue Anyway', onPress: () => handleSkip() },
+            { text: 'Cancel', style: 'cancel' },
+          ]
+        );
+        return;
+      }
+
+      const result = await request();
+
+      if (result.status === 'granted') {
+        setHealthConnected(true);
+        router.push('/(onboarding)/notifications');
+      } else if (result.status === 'denied') {
+        Alert.alert(
+          'Permission Denied',
+          'Health data access was denied. You can enable it later in Settings, or continue to log activities manually.',
+          [
+            { text: 'Continue Without Health', onPress: () => handleSkip() },
+            { text: 'Try Again', onPress: () => handleConnect() },
+          ]
+        );
+      } else {
+        // unavailable or other status
+        handleSkip();
+      }
+    } catch (error) {
+      console.error('[HealthPermissions] Error:', error);
+      Alert.alert(
+        'Connection Failed',
+        'Unable to connect to health data. You can try again later or continue without it.',
+        [
+          { text: 'Continue Without Health', onPress: () => handleSkip() },
+          { text: 'Cancel', style: 'cancel' },
+        ]
+      );
+    } finally {
+      setIsRequesting(false);
+    }
   };
 
   const handleSkip = () => {
@@ -25,6 +72,8 @@ export default function HealthPermissionsScreen() {
   const handleBack = () => {
     router.back();
   };
+
+  const buttonLoading = isLoading || isRequesting;
 
   return (
     <View
@@ -42,8 +91,10 @@ export default function HealthPermissionsScreen() {
         <Text className="text-xs font-semibold text-gray-400 tracking-wider uppercase">
           Step 6 of 6
         </Text>
-        <Pressable onPress={handleSkip}>
-          <Text className="text-primary-500 font-semibold text-sm">Skip</Text>
+        <Pressable onPress={handleSkip} disabled={buttonLoading}>
+          <Text className={`font-semibold text-sm ${buttonLoading ? 'text-gray-500' : 'text-primary-500'}`}>
+            Skip
+          </Text>
         </Pressable>
       </View>
 
@@ -86,6 +137,17 @@ export default function HealthPermissionsScreen() {
             sold or shared with third parties.
           </Text>
         </View>
+
+        {/* Availability note */}
+        {!isAvailable && !isLoading && (
+          <View className="mt-4 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+            <Text className="text-xs text-yellow-500 text-center">
+              {Platform.OS === 'ios'
+                ? 'Apple Health is not available on this device'
+                : 'Health Connect is not installed on this device'}
+            </Text>
+          </View>
+        )}
       </View>
 
       {/* Footer */}
@@ -93,7 +155,7 @@ export default function HealthPermissionsScreen() {
         className="px-6 pt-4 bg-background-primary"
         style={{ paddingBottom: Math.max(insets.bottom, 16) + 8 }}
       >
-        <Button onPress={handleConnect}>
+        <Button onPress={handleConnect} isLoading={buttonLoading}>
           Connect Health Data
         </Button>
       </View>

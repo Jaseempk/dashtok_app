@@ -1,11 +1,13 @@
 import { View, Text, ScrollView, Alert, ActionSheetIOS, Platform, Modal, TextInput, Pressable, KeyboardAvoidingView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 
 import { useAuth } from '@/features/auth';
 import { useProfile, useUpdateProfile, useDeleteAccount } from '@/features/user';
 import { useUserStore } from '@/stores/userStore';
+import { useOnboardingStore } from '@/features/onboarding/store/onboardingStore';
+import { useHealthPermissions, useHealthSync } from '@/features/health';
 import {
   SettingsSection,
   SettingsRow,
@@ -29,6 +31,12 @@ export default function ProfileScreen() {
   const setPreference = useUserStore((state) => state.setPreference);
   const setNotification = useUserStore((state) => state.setNotification);
   const resetStore = useUserStore((state) => state.reset);
+
+  // Health data
+  const healthConnected = useOnboardingStore((state) => state.healthConnected);
+  const setHealthConnected = useOnboardingStore((state) => state.setHealthConnected);
+  const { request: requestHealthPermissions, isAvailable: isHealthAvailable } = useHealthPermissions();
+  const { sync: syncHealth, isSyncing, lastSyncedAt } = useHealthSync();
 
   // Dialog states
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
@@ -89,6 +97,56 @@ export default function ProfileScreen() {
   const handleExportData = useCallback(() => {
     Alert.alert('Export Data', 'Data export feature coming soon!');
   }, []);
+
+  const handleHealthToggle = useCallback(async (value: boolean) => {
+    if (value) {
+      // Connect health
+      if (!isHealthAvailable) {
+        Alert.alert(
+          'Health Data Unavailable',
+          Platform.OS === 'ios'
+            ? 'Apple Health is not available on this device.'
+            : 'Health Connect is not available on this device.'
+        );
+        return;
+      }
+      const result = await requestHealthPermissions();
+      if (result.status === 'granted') {
+        setHealthConnected(true);
+        // Sync immediately after connecting
+        syncHealth();
+      } else {
+        Alert.alert('Permission Denied', 'Health data access was denied. Please enable it in Settings.');
+      }
+    } else {
+      // Disconnect health (just update local state)
+      setHealthConnected(false);
+    }
+  }, [isHealthAvailable, requestHealthPermissions, setHealthConnected, syncHealth]);
+
+  const handleSyncNow = useCallback(async () => {
+    if (!healthConnected) {
+      Alert.alert('Not Connected', 'Please connect health data first.');
+      return;
+    }
+    const result = await syncHealth();
+    Alert.alert(
+      'Sync Complete',
+      `Synced ${result.synced} activities, ${result.skipped} already existed.`
+    );
+  }, [healthConnected, syncHealth]);
+
+  const formatLastSync = () => {
+    if (!lastSyncedAt) return 'Never';
+    const now = new Date();
+    const diff = now.getTime() - lastSyncedAt.getTime();
+    const minutes = Math.floor(diff / 60000);
+    if (minutes < 1) return 'Just now';
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    return lastSyncedAt.toLocaleDateString();
+  };
 
   const handleLogout = useCallback(async () => {
     setIsLoggingOut(true);
@@ -182,14 +240,24 @@ export default function ProfileScreen() {
           <SettingsToggleRow
             icon="heart"
             iconColor="#ef4444"
-            label="Apple Health Sync"
-            subtitle="Sync steps and workouts"
-            value={false}
-            onValueChange={() => {
-              Alert.alert('Coming Soon', 'Health data sync will be available in a future update.');
-            }}
-            disabled
+            label={Platform.OS === 'ios' ? 'Apple Health Sync' : 'Health Connect Sync'}
+            subtitle={healthConnected ? `Last sync: ${formatLastSync()}` : 'Sync steps and workouts'}
+            value={healthConnected}
+            onValueChange={handleHealthToggle}
           />
+          {healthConnected && (
+            <>
+              <View className="h-px bg-border-subtle mx-4" />
+              <SettingsRow
+                icon="cloud"
+                iconColor={colors.primary[500]}
+                label="Sync Now"
+                value={isSyncing ? 'Syncing...' : undefined}
+                onPress={handleSyncNow}
+                disabled={isSyncing}
+              />
+            </>
+          )}
         </SettingsSection>
 
         {/* Account Section */}
