@@ -23,7 +23,11 @@
         "NSLocationAlwaysAndWhenInUseUsageDescription": "Dashtok needs your location to track activities in the background.",
         "NSMotionUsageDescription": "Dashtok uses motion data to count your steps.",
         "NSFaceIDUsageDescription": "Dashtok uses Face ID for secure authentication.",
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSFamilyControlsUsageDescription": "Dashtok needs Screen Time access to help you earn screen time through fitness goals."
+      },
+      "entitlements": {
+        "com.apple.developer.family-controls": true
       }
     },
     "android": {
@@ -46,6 +50,21 @@
       "expo-router",
       "expo-secure-store",
       "expo-notifications",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "deploymentTarget": "16.0"
+          }
+        }
+      ],
+      [
+        "react-native-device-activity",
+        {
+          "appleTeamId": "",
+          "appGroup": "group.com.dashtok.app"
+        }
+      ],
       [
         "expo-location",
         {
