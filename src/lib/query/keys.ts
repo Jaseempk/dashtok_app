@@ -36,4 +36,23 @@ export const queryKeys = {
     all: ['user'] as const,
     profile: () => [...queryKeys.user.all, 'profile'] as const,
   },
+
+  // Blocked Apps
+  blockedApps: {
+    all: ['blockedApps'] as const,
+    current: () => [...queryKeys.blockedApps.all, 'current'] as const,
+  },
+
+  // Enforcement
+  enforcement: {
+    all: ['enforcement'] as const,
+    status: () => [...queryKeys.enforcement.all, 'status'] as const,
+  },
+
+  // Usage
+  usage: {
+    all: ['usage'] as const,
+    today: () => [...queryKeys.usage.all, 'today'] as const,
+    session: (id: string) => [...queryKeys.usage.all, 'session', id] as const,
+  },
 } as const;

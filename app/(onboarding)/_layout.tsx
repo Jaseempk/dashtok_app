@@ -20,6 +20,7 @@ export default function OnboardingLayout() {
       <Stack.Screen name="activity-type" />
       <Stack.Screen name="daily-target" />
       <Stack.Screen name="health-permissions" />
+      <Stack.Screen name="app-blocking" />
       <Stack.Screen name="notifications" />
       <Stack.Screen name="complete" options={{ animation: 'fade' }} />
     </Stack>

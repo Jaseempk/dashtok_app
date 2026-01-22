@@ -49,6 +49,12 @@ interface OnboardingState {
     weeklySummary: boolean;
   };
 
+  // Screen Time (App Blocking)
+  screenTimeAuthorized: boolean;
+  blockedAppsSelection: string | null; // Serialized FamilyActivitySelection token
+  blockedAppsCount: number;
+  blockedCategoriesCount: number;
+
   // Computed
   profileType: ProfileType | null;
 
@@ -62,6 +68,8 @@ interface OnboardingState {
   setHealthConnected: (connected: boolean) => void;
   setNotificationsEnabled: (enabled: boolean) => void;
   setNotificationPreference: (key: keyof OnboardingState['notificationPreferences'], value: boolean) => void;
+  setScreenTimeAuthorized: (authorized: boolean) => void;
+  setBlockedAppsSelection: (selection: string | null, appCount: number, categoryCount: number) => void;
   computeProfile: () => void;
   getRewardMinutes: () => number;
   reset: () => void;
@@ -81,6 +89,10 @@ const initialState = {
     streakAlerts: true,
     weeklySummary: false,
   },
+  screenTimeAuthorized: false,
+  blockedAppsSelection: null,
+  blockedAppsCount: 0,
+  blockedCategoriesCount: 0,
   profileType: null,
 };
 
@@ -128,6 +140,15 @@ export const useOnboardingStore = create<OnboardingState>()(
             [key]: value,
           },
         })),
+
+      setScreenTimeAuthorized: (authorized) => set({ screenTimeAuthorized: authorized }),
+
+      setBlockedAppsSelection: (selection, appCount, categoryCount) =>
+        set({
+          blockedAppsSelection: selection,
+          blockedAppsCount: appCount,
+          blockedCategoriesCount: categoryCount,
+        }),
 
       computeProfile: () => {
         const { consistencyLevel, screenTimeFeeling, pastAppIssues } = get();

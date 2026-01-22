@@ -36,7 +36,7 @@ export default function HealthPermissionsScreen() {
 
       if (result.status === 'granted') {
         setHealthConnected(true);
-        router.push('/(onboarding)/notifications');
+        router.push('/(onboarding)/app-blocking');
       } else if (result.status === 'denied') {
         Alert.alert(
           'Permission Denied',
@@ -66,7 +66,7 @@ export default function HealthPermissionsScreen() {
   };
 
   const handleSkip = () => {
-    router.push('/(onboarding)/notifications');
+    router.push('/(onboarding)/app-blocking');
   };
 
   const handleBack = () => {
@@ -89,7 +89,7 @@ export default function HealthPermissionsScreen() {
           <Icon name="arrow-back" size="lg" color="#9ca3af" />
         </Pressable>
         <Text className="text-xs font-semibold text-gray-400 tracking-wider uppercase">
-          Step 6 of 6
+          Step 5 of 7
         </Text>
         <Pressable onPress={handleSkip} disabled={buttonLoading}>
           <Text className={`font-semibold text-sm ${buttonLoading ? 'text-gray-500' : 'text-primary-500'}`}>
