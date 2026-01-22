@@ -58,3 +58,5 @@ PHASE2_DESIGN_ANALYSIS.md
 
 android/
 ios/
+
+package-lock.json

@@ -21,9 +21,7 @@ export default function ScreenTimeScreen() {
 
   return (
     <OnboardingLayout
-      showProgress
-      currentStep={2}
-      totalSteps={6}
+      skipTopInset
       primaryButtonText="Continue"
       primaryButtonDisabled={!screenTimeFeeling}
       onPrimaryPress={handleContinue}

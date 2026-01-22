@@ -21,9 +21,7 @@ export default function ConsistencyScreen() {
 
   return (
     <OnboardingLayout
-      showProgress
-      currentStep={1}
-      totalSteps={6}
+      skipTopInset
       primaryButtonText="Continue"
       primaryButtonDisabled={!consistencyLevel}
       onPrimaryPress={handleContinue}

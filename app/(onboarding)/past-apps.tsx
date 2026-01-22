@@ -24,9 +24,7 @@ export default function PastAppsScreen() {
 
   return (
     <OnboardingLayout
-      showProgress
-      currentStep={3}
-      totalSteps={6}
+      skipTopInset
       primaryButtonText="Continue"
       primaryButtonDisabled={!hasSelection}
       onPrimaryPress={handleContinue}

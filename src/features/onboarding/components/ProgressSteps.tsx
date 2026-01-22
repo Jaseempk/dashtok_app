@@ -12,7 +12,8 @@ interface ProgressStepsProps {
 }
 
 export function ProgressSteps({ current, total }: ProgressStepsProps) {
-  const progress = useSharedValue(0);
+  // Start at previous step's position so we only animate the increment
+  const progress = useSharedValue((current - 1) / total);
 
   useEffect(() => {
     progress.value = withSpring(current / total, {

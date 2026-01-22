@@ -2,7 +2,6 @@ import { ReactNode } from 'react';
 import {
   View,
   Text,
-  ScrollView,
   Pressable,
   KeyboardAvoidingView,
   Platform,
@@ -10,16 +9,13 @@ import {
 import Animated from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ProgressSteps } from './ProgressSteps';
 import { Button, Icon } from '@/components/ui';
 import { useFadeIn } from '@/lib/animations';
 
 interface OnboardingLayoutProps {
   children: ReactNode;
   showBackButton?: boolean;
-  showProgress?: boolean;
-  currentStep?: number;
-  totalSteps?: number;
+  skipTopInset?: boolean; // When layout handles progress bar with safe area
   showSkip?: boolean;
   onSkip?: () => void;
   primaryButtonText?: string;
@@ -34,9 +30,7 @@ interface OnboardingLayoutProps {
 export function OnboardingLayout({
   children,
   showBackButton = true,
-  showProgress = false,
-  currentStep = 1,
-  totalSteps = 6,
+  skipTopInset = false,
   showSkip = false,
   onSkip,
   primaryButtonText = 'Continue',
@@ -56,10 +50,13 @@ export function OnboardingLayout({
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       className="flex-1 bg-background-primary"
     >
-      <View className="flex-1" style={{ paddingTop: insets.top }}>
+      <View
+        className="flex-1"
+        style={{ paddingTop: skipTopInset ? 0 : insets.top }}
+      >
         {/* Header */}
         <View className="px-6 pt-4 pb-2">
-          <View className="flex-row items-center justify-between mb-4">
+          <View className="flex-row items-center justify-between">
             {showBackButton ? (
               <Pressable
                 onPress={() => router.back()}
@@ -71,12 +68,6 @@ export function OnboardingLayout({
               <View className="w-11" />
             )}
 
-            {showProgress && (
-              <Text className="text-sm font-medium text-primary-500 tracking-wide">
-                Step {currentStep} of {totalSteps}
-              </Text>
-            )}
-
             {showSkip ? (
               <Pressable onPress={onSkip} className="px-2 py-1">
                 <Text className="text-primary-500 font-semibold text-sm">Skip</Text>
@@ -85,8 +76,6 @@ export function OnboardingLayout({
               <View className="w-11" />
             )}
           </View>
-
-          {showProgress && <ProgressSteps current={currentStep} total={totalSteps} />}
         </View>
 
         {/* Content */}
