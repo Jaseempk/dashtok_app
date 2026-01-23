@@ -7,3 +7,5 @@ export { AnalysisStep } from './AnalysisStep';
 export { ActivityTypeCard } from './ActivityTypeCard';
 export { DistanceSlider } from './DistanceSlider';
 export { PermissionRow } from './PermissionRow';
+export { GrowthBarChart } from './GrowthBarChart';
+export { ProfileBadge } from './ProfileBadge';

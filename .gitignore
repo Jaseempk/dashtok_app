@@ -60,3 +60,4 @@ android/
 ios/
 
 package-lock.json
+targets/
