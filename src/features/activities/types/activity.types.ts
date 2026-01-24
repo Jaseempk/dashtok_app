@@ -45,6 +45,11 @@ export interface CreateActivityInput {
   endedAt: string;
   source: ActivitySource;
   healthkitId?: string;
+  // Anti-cheat: source metadata
+  sourceBundleId?: string | null;
+  sourceDeviceModel?: string | null;
+  isManualEntry?: boolean;
+  routePointCount?: number;
 }
 
 // Computed stats for display

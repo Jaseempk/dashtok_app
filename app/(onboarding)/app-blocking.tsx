@@ -9,7 +9,7 @@ import { AppSelectionView, enforcementService, useCreateBlockedApps } from '@/fe
 
 const APP_BLOCKING_PERMISSIONS = [
   {
-    icon: 'lock-closed' as const,
+    icon: 'lock' as const,
     title: 'Block Distracting Apps',
     description: 'Lock apps until you complete your fitness goal',
   },
@@ -19,7 +19,7 @@ const APP_BLOCKING_PERMISSIONS = [
     description: 'Monitor how long you use selected apps',
   },
   {
-    icon: 'shield-checkmark' as const,
+    icon: 'shield-check' as const,
     title: 'Earn Access',
     description: 'Unlock apps by completing your daily movement',
   },
@@ -190,7 +190,7 @@ export default function AppBlockingScreen() {
           <Icon name="arrow-back" size="lg" color="#9ca3af" />
         </Pressable>
         <Text className="text-xs font-semibold text-gray-400 tracking-wider uppercase">
-          Step 6 of 7
+          Step 7 of 7
         </Text>
         <Pressable onPress={handleSkip} disabled={isAuthorizing}>
           <Text
@@ -207,7 +207,7 @@ export default function AppBlockingScreen() {
           {/* Hero Icon */}
           <View className="items-center mb-6">
             <View className="w-24 h-24 rounded-3xl bg-primary-500/10 border border-primary-500/30 items-center justify-center">
-              <Icon name="lock-closed" size="3xl" color="#00f5d4" />
+              <Icon name="lock" size="3xl" color="#00f5d4" />
             </View>
           </View>
 
@@ -234,7 +234,7 @@ export default function AppBlockingScreen() {
           {/* Privacy Note */}
           <View className="mt-6 p-4 rounded-xl bg-background-secondary/50">
             <View className="flex-row items-center gap-2 mb-1">
-              <Icon name="shield" size="sm" color="#00f5d4" />
+              <Icon name="shield-check" size="sm" color="#00f5d4" />
               <Text className="text-sm font-semibold text-white">
                 Enforced by iOS
               </Text>

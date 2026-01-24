@@ -5,48 +5,125 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Icon } from '@/components/ui';
 import { CircularProgress, AnalysisStep } from '@/features/onboarding/components';
 import { useOnboardingStore } from '@/features/onboarding/store/onboardingStore';
+import { onboardingApi } from '@/features/onboarding/api/onboardingApi';
+import { healthService } from '@/features/health/services/healthService';
 
-const ANALYSIS_STEPS = [
-  { label: 'Calculating consistency profile', threshold: 25 },
-  { label: 'Identifying motivation triggers', threshold: 50 },
-  { label: 'Building personalized strategy', threshold: 75 },
-  { label: 'Generating fitness-reward balance', threshold: 100 },
+type StepStatus = 'pending' | 'loading' | 'complete' | 'error';
+
+interface AnalysisStepConfig {
+  label: string;
+  progressThreshold: number;
+}
+
+const ANALYSIS_STEPS: AnalysisStepConfig[] = [
+  { label: 'Reading activity history', progressThreshold: 25 },
+  { label: 'Analyzing behavior patterns', progressThreshold: 50 },
+  { label: 'Generating personalized goal', progressThreshold: 75 },
+  { label: 'Preparing your profile', progressThreshold: 100 },
 ];
-
-const TOTAL_DURATION = 6000; // 6 seconds
 
 export default function AnalyzingScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { computeProfile } = useOnboardingStore();
+
+  const {
+    ageRange,
+    gender,
+    heightRange,
+    fitnessLevel,
+    behaviorScores,
+    activityType,
+    healthConnected,
+    getBehaviorScore,
+    setHealthBaseline,
+    setGoalRecommendation,
+  } = useOnboardingStore();
 
   const [progress, setProgress] = useState(0);
-  const startTimeRef = useRef<number>(Date.now());
+  const [stepStatuses, setStepStatuses] = useState<StepStatus[]>(['pending', 'pending', 'pending', 'pending']);
+  const [error, setError] = useState<string | null>(null);
+  const hasStarted = useRef(false);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      const elapsed = Date.now() - startTimeRef.current;
-      const newProgress = Math.min((elapsed / TOTAL_DURATION) * 100, 100);
-      setProgress(newProgress);
+    if (hasStarted.current) return;
+    hasStarted.current = true;
 
-      if (newProgress >= 100) {
-        clearInterval(interval);
-        // Compute profile based on answers
-        computeProfile();
-        // Navigate to report after a brief pause
-        setTimeout(() => {
-          router.replace('/(onboarding)/report');
-        }, 500);
+    runAnalysis();
+  }, []);
+
+  const runAnalysis = async () => {
+    try {
+      // Step 1: Read health baseline (if connected)
+      setStepStatuses(['loading', 'pending', 'pending', 'pending']);
+      setProgress(10);
+
+      let baseline = null;
+      if (healthConnected) {
+        baseline = await healthService.getBaseline(90);
+        setHealthBaseline(baseline);
       }
-    }, 50);
 
-    return () => clearInterval(interval);
-  }, [computeProfile, router]);
+      setStepStatuses(['complete', 'loading', 'pending', 'pending']);
+      setProgress(30);
 
-  const getStepStatus = (threshold: number) => {
-    if (progress >= threshold) return 'complete';
-    if (progress >= threshold - 25) return 'loading';
-    return 'pending';
+      // Step 2: Prepare data
+      await delay(500); // Brief pause for visual feedback
+      setProgress(50);
+
+      // Step 3: Call LLM API
+      setStepStatuses(['complete', 'complete', 'loading', 'pending']);
+      setProgress(60);
+
+      const behaviorScore = getBehaviorScore();
+      const recommendation = await onboardingApi.generateGoal({
+        ageRange: ageRange!,
+        gender: gender!,
+        heightRange: heightRange!,
+        fitnessLevel: fitnessLevel!,
+        behaviorScore,
+        behaviorBreakdown: {
+          unconsciousUsage: behaviorScores.unconsciousUsage ?? 0,
+          timeDisplacement: behaviorScores.timeDisplacement ?? 0,
+          productivityImpact: behaviorScores.productivityImpact ?? 0,
+          failedRegulation: behaviorScores.failedRegulation ?? 0,
+        },
+        activityType: activityType!,
+        healthBaseline: baseline,
+      });
+
+      setGoalRecommendation(recommendation);
+      setStepStatuses(['complete', 'complete', 'complete', 'loading']);
+      setProgress(85);
+
+      // Step 4: Finalize
+      await delay(500);
+      setStepStatuses(['complete', 'complete', 'complete', 'complete']);
+      setProgress(100);
+
+      // Navigate to profile result
+      await delay(500);
+      router.replace('/(onboarding)/profile-result');
+    } catch (err) {
+      console.error('[Analyzing] Error:', err);
+      setError(err instanceof Error ? err.message : 'Something went wrong');
+
+      // Update step status to show error
+      setStepStatuses((prev) => {
+        const loadingIdx = prev.findIndex((s) => s === 'loading');
+        if (loadingIdx >= 0) {
+          const updated = [...prev];
+          updated[loadingIdx] = 'error';
+          return updated;
+        }
+        return prev;
+      });
+    }
+  };
+
+  const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  const getStepStatus = (index: number): StepStatus => {
+    return stepStatuses[index];
   };
 
   return (
@@ -59,7 +136,7 @@ export default function AnalyzingScreen() {
         <View className="flex-row items-center gap-2 px-4 py-2 rounded-full bg-primary-500/10 border border-primary-500/30">
           <View className="w-2 h-2 rounded-full bg-primary-500" />
           <Text className="text-primary-500 text-xs font-semibold tracking-wider uppercase">
-            System Diagnostic
+            AI Analysis
           </Text>
         </View>
       </View>
@@ -80,11 +157,32 @@ export default function AnalyzingScreen() {
           <AnalysisStep
             key={step.label}
             label={step.label}
-            status={getStepStatus(step.threshold)}
+            status={getStepStatus(index)}
             stepNumber={index + 1}
           />
         ))}
       </View>
+
+      {/* Error message */}
+      {error && (
+        <View className="px-6 mt-6">
+          <View className="rounded-2xl bg-red-500/10 border border-red-500/30 p-4">
+            <Text className="text-red-400 text-sm text-center">{error}</Text>
+            <Text
+              className="text-primary-500 text-sm text-center mt-2 font-medium"
+              onPress={() => {
+                setError(null);
+                hasStarted.current = false;
+                setStepStatuses(['pending', 'pending', 'pending', 'pending']);
+                setProgress(0);
+                runAnalysis();
+              }}
+            >
+              Tap to retry
+            </Text>
+          </View>
+        </View>
+      )}
 
       {/* Footer */}
       <View className="absolute bottom-0 left-0 right-0 items-center pb-8">

@@ -1,99 +1,134 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { zustandStorage } from '@/lib/storage/mmkv';
-
-export type ConsistencyLevel =
-  | 'start-strong'
-  | 'inconsistent'
-  | 'accountability'
-  | 'rarely';
-
-export type ScreenTimeFeeling =
-  | 'guilty'
-  | 'wish-moved'
-  | 'no-system'
-  | 'for-child';
-
-export type PastAppIssue =
-  | 'bored'
-  | 'no-reward'
-  | 'complicated'
-  | 'forgot'
-  | 'first-app';
-
-export type ActivityType = 'walk' | 'run' | 'any';
-
-export type ProfileType =
-  | 'inconsistent-achiever'
-  | 'fresh-starter'
-  | 'accountability-seeker'
-  | 'motivated-parent';
+import type {
+  AgeRange,
+  Gender,
+  HeightRange,
+  FitnessLevel,
+  ActivityType,
+  Frequency,
+  BehaviorScores,
+  HealthBaseline,
+  GoalRecommendation,
+  NotificationPreferences,
+} from '../types/onboarding.types';
 
 interface OnboardingState {
-  // Survey answers
-  consistencyLevel: ConsistencyLevel | null;
-  screenTimeFeeling: ScreenTimeFeeling | null;
-  pastAppIssues: PastAppIssue[];
+  // Demographics (about-you)
+  ageRange: AgeRange | null;
+  gender: Gender | null;
+  heightRange: HeightRange | null;
 
-  // Goal setup
-  activityType: ActivityType | null;
-  dailyTargetKm: number;
-  weekendAdjust: boolean;
-
-  // Permissions
+  // Permissions (health-permissions)
   healthConnected: boolean;
-  notificationsEnabled: boolean;
-  notificationPreferences: {
-    dailyReminders: boolean;
-    streakAlerts: boolean;
-    weeklySummary: boolean;
-  };
 
-  // Screen Time (App Blocking)
+  // Fitness (fitness-habits)
+  fitnessLevel: FitnessLevel | null;
+
+  // Behavior assessment (behavior-1 to behavior-4)
+  behaviorScores: BehaviorScores;
+
+  // Activity preference (activity-type)
+  activityType: ActivityType | null;
+
+  // Health baseline (computed in analyzing)
+  healthBaseline: HealthBaseline | null;
+
+  // LLM recommendation (computed in analyzing)
+  goalRecommendation: GoalRecommendation | null;
+
+  // Final goal selection (goal-recommendation)
+  dailyTargetKm: number;
+  userAdjustedGoal: boolean;
+
+  // App blocking (app-blocking)
   screenTimeAuthorized: boolean;
-  blockedAppsSelection: string | null; // Serialized FamilyActivitySelection token
+  blockedAppsSelection: string | null;
   blockedAppsCount: number;
   blockedCategoriesCount: number;
 
-  // Computed
-  profileType: ProfileType | null;
+  // Notifications (notifications)
+  notificationsEnabled: boolean;
+  notificationPreferences: NotificationPreferences;
 
-  // Actions
-  setConsistencyLevel: (level: ConsistencyLevel) => void;
-  setScreenTimeFeeling: (feeling: ScreenTimeFeeling) => void;
-  togglePastAppIssue: (issue: PastAppIssue) => void;
-  setActivityType: (type: ActivityType) => void;
-  setDailyTargetKm: (km: number) => void;
-  setWeekendAdjust: (enabled: boolean) => void;
+  // Computed helpers
+  getBehaviorScore: () => number;
+  getRewardMinutes: () => number;
+
+  // Actions - Demographics
+  setAgeRange: (value: AgeRange) => void;
+  setGender: (value: Gender) => void;
+  setHeightRange: (value: HeightRange) => void;
+
+  // Actions - Fitness
+  setFitnessLevel: (value: FitnessLevel) => void;
+  setBehaviorScore: (key: keyof BehaviorScores, value: Frequency) => void;
+  setActivityType: (value: ActivityType) => void;
+
+  // Actions - Health
   setHealthConnected: (connected: boolean) => void;
-  setNotificationsEnabled: (enabled: boolean) => void;
-  setNotificationPreference: (key: keyof OnboardingState['notificationPreferences'], value: boolean) => void;
+  setHealthBaseline: (value: HealthBaseline | null) => void;
+
+  // Actions - Goal
+  setGoalRecommendation: (value: GoalRecommendation) => void;
+  setDailyTargetKm: (value: number) => void;
+  setUserAdjustedGoal: (value: boolean) => void;
+
+  // Actions - App Blocking
   setScreenTimeAuthorized: (authorized: boolean) => void;
   setBlockedAppsSelection: (selection: string | null, appCount: number, categoryCount: number) => void;
-  computeProfile: () => void;
-  getRewardMinutes: () => number;
+
+  // Actions - Notifications
+  setNotificationsEnabled: (enabled: boolean) => void;
+  setNotificationPreference: (key: keyof NotificationPreferences, value: boolean) => void;
+
+  // Reset
   reset: () => void;
 }
 
+const initialBehaviorScores: BehaviorScores = {
+  unconsciousUsage: null,
+  timeDisplacement: null,
+  productivityImpact: null,
+  failedRegulation: null,
+};
+
 const initialState = {
-  consistencyLevel: null,
-  screenTimeFeeling: null,
-  pastAppIssues: [],
-  activityType: null,
-  dailyTargetKm: 2.0,
-  weekendAdjust: false,
+  // Demographics
+  ageRange: null,
+  gender: null,
+  heightRange: null,
+
+  // Permissions
   healthConnected: false,
+
+  // Fitness
+  fitnessLevel: null,
+  behaviorScores: initialBehaviorScores,
+  activityType: null,
+
+  // Health baseline
+  healthBaseline: null,
+
+  // Goal recommendation
+  goalRecommendation: null,
+  dailyTargetKm: 2.0,
+  userAdjustedGoal: false,
+
+  // App blocking
+  screenTimeAuthorized: false,
+  blockedAppsSelection: null,
+  blockedAppsCount: 0,
+  blockedCategoriesCount: 0,
+
+  // Notifications
   notificationsEnabled: false,
   notificationPreferences: {
     dailyReminders: true,
     streakAlerts: true,
     weeklySummary: false,
   },
-  screenTimeAuthorized: false,
-  blockedAppsSelection: null,
-  blockedAppsCount: 0,
-  blockedCategoriesCount: 0,
-  profileType: null,
 };
 
 export const useOnboardingStore = create<OnboardingState>()(
@@ -101,36 +136,64 @@ export const useOnboardingStore = create<OnboardingState>()(
     (set, get) => ({
       ...initialState,
 
-      setConsistencyLevel: (level) => set({ consistencyLevel: level }),
+      // Computed: Total behavior score (0-12)
+      getBehaviorScore: () => {
+        const { behaviorScores } = get();
+        const values = Object.values(behaviorScores).filter((v): v is Frequency => v !== null);
+        return values.reduce<number>((sum, v) => sum + v, 0);
+      },
 
-      setScreenTimeFeeling: (feeling) => set({ screenTimeFeeling: feeling }),
+      // Computed: Reward minutes based on distance and activity
+      getRewardMinutes: () => {
+        const { dailyTargetKm, activityType } = get();
+        const multiplier = activityType === 'run' ? 22 : 15;
+        return Math.round(dailyTargetKm * multiplier);
+      },
 
-      togglePastAppIssue: (issue) =>
-        set((state) => {
-          // If selecting "first-app", clear others
-          if (issue === 'first-app') {
-            return {
-              pastAppIssues: state.pastAppIssues.includes(issue) ? [] : [issue],
-            };
-          }
+      // Demographics
+      setAgeRange: (value) => set({ ageRange: value }),
+      setGender: (value) => set({ gender: value }),
+      setHeightRange: (value) => set({ heightRange: value }),
 
-          // If selecting other issue, remove "first-app"
-          const filtered = state.pastAppIssues.filter((i) => i !== 'first-app');
+      // Fitness
+      setFitnessLevel: (value) => set({ fitnessLevel: value }),
 
-          if (filtered.includes(issue)) {
-            return { pastAppIssues: filtered.filter((i) => i !== issue) };
-          }
-          return { pastAppIssues: [...filtered, issue] };
+      setBehaviorScore: (key, value) =>
+        set((state) => ({
+          behaviorScores: {
+            ...state.behaviorScores,
+            [key]: value,
+          },
+        })),
+
+      setActivityType: (value) => set({ activityType: value }),
+
+      // Health
+      setHealthConnected: (connected) => set({ healthConnected: connected }),
+      setHealthBaseline: (value) => set({ healthBaseline: value }),
+
+      // Goal
+      setGoalRecommendation: (value) =>
+        set({
+          goalRecommendation: value,
+          dailyTargetKm: value.suggestedDistanceKm,
+          userAdjustedGoal: false,
         }),
 
-      setActivityType: (type) => set({ activityType: type }),
+      setDailyTargetKm: (value) => set({ dailyTargetKm: value }),
+      setUserAdjustedGoal: (value) => set({ userAdjustedGoal: value }),
 
-      setDailyTargetKm: (km) => set({ dailyTargetKm: km }),
+      // App Blocking
+      setScreenTimeAuthorized: (authorized) => set({ screenTimeAuthorized: authorized }),
 
-      setWeekendAdjust: (enabled) => set({ weekendAdjust: enabled }),
+      setBlockedAppsSelection: (selection, appCount, categoryCount) =>
+        set({
+          blockedAppsSelection: selection,
+          blockedAppsCount: appCount,
+          blockedCategoriesCount: categoryCount,
+        }),
 
-      setHealthConnected: (connected) => set({ healthConnected: connected }),
-
+      // Notifications
       setNotificationsEnabled: (enabled) => set({ notificationsEnabled: enabled }),
 
       setNotificationPreference: (key, value) =>
@@ -141,38 +204,7 @@ export const useOnboardingStore = create<OnboardingState>()(
           },
         })),
 
-      setScreenTimeAuthorized: (authorized) => set({ screenTimeAuthorized: authorized }),
-
-      setBlockedAppsSelection: (selection, appCount, categoryCount) =>
-        set({
-          blockedAppsSelection: selection,
-          blockedAppsCount: appCount,
-          blockedCategoriesCount: categoryCount,
-        }),
-
-      computeProfile: () => {
-        const { consistencyLevel, screenTimeFeeling, pastAppIssues } = get();
-
-        let profileType: ProfileType = 'inconsistent-achiever';
-
-        if (screenTimeFeeling === 'for-child') {
-          profileType = 'motivated-parent';
-        } else if (pastAppIssues.includes('first-app')) {
-          profileType = 'fresh-starter';
-        } else if (consistencyLevel === 'accountability') {
-          profileType = 'accountability-seeker';
-        }
-
-        set({ profileType });
-      },
-
-      getRewardMinutes: () => {
-        const { dailyTargetKm, activityType } = get();
-        // Base: 15 min per km for walking, 22 min per km for running
-        const multiplier = activityType === 'run' ? 22 : 15;
-        return Math.round(dailyTargetKm * multiplier);
-      },
-
+      // Reset
       reset: () => set(initialState),
     }),
     {

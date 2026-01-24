@@ -1,5 +1,5 @@
 import type { IconName } from "@/components/ui";
-import { ProfileType } from "../store/onboardingStore";
+import type { ProfileType } from "../types/onboarding.types";
 
 export const PROFILE_CONTENT: Record<
   ProfileType,
@@ -12,38 +12,38 @@ export const PROFILE_CONTENT: Record<
     trajectoryGain: string;
   }
 > = {
-  "inconsistent-achiever": {
-    title: "The Inconsistent",
-    subtitle: "Achiever",
+  rebuilder: {
+    title: "The Momentum",
+    subtitle: "Rebuilder",
     description:
-      "You have strong intentions but lack a tangible reward system to bridge the gap between intention and action.",
+      "You have the drive but lacked a system that rewards consistency. This changes now.",
     successRate: 87,
     trajectory: "Exponential Growth",
     trajectoryGain: "+150%",
   },
-  "fresh-starter": {
+  starter: {
     title: "The Fresh",
     subtitle: "Starter",
     description:
-      "You're beginning your fitness journey with a clean slate. The right system from day one will set you up for lasting success.",
+      "A clean slate is powerful. Building habits from scratch means no bad patterns to unlearn.",
     successRate: 92,
     trajectory: "Steady Climb",
     trajectoryGain: "+200%",
   },
-  "accountability-seeker": {
-    title: "The Accountability",
-    subtitle: "Seeker",
+  optimizer: {
+    title: "The Active",
+    subtitle: "Optimizer",
     description:
-      "You've built good habits but want external motivation to reach the next level. Rewards will amplify your existing discipline.",
+      "You already move regularly. Adding structure will amplify your existing discipline.",
     successRate: 94,
     trajectory: "Accelerated Progress",
     trajectoryGain: "+120%",
   },
-  "motivated-parent": {
-    title: "The Motivated",
-    subtitle: "Parent",
+  guardian: {
+    title: "The Digital",
+    subtitle: "Guardian",
     description:
-      "You're setting up a healthy relationship between screen time and physical activity for your child. Smart parenting starts here.",
+      "You're setting up a healthy relationship between screen time and physical activity. Smart choices start here.",
     successRate: 89,
     trajectory: "Healthy Habits",
     trajectoryGain: "+180%",
@@ -90,15 +90,6 @@ export const ACTIVITY_OPTIONS = [
     targetText: "~45 min/day",
     targetIcon: "flash" as const,
     image: require("@/assets/images/activity-run.png"),
-  },
-  {
-    type: "any" as const,
-    title: "Mixed Cardio",
-    badge: "Flexible",
-    badgeVariant: "neutral" as const,
-    targetText: "Heart Rate",
-    targetIcon: "heart" as const,
-    image: require("@/assets/images/activity-cardio.png"),
   },
 ];
 

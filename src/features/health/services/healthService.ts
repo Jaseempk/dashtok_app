@@ -4,6 +4,7 @@ import type {
   HealthPermissionResult,
   HealthActivity,
 } from '../types/health.types';
+import type { HealthBaseline } from '@/features/onboarding/types/onboarding.types';
 
 // Platform-specific service selection
 function getPlatformService(): HealthService | null {
@@ -78,5 +79,13 @@ export const healthService = {
     const now = new Date();
     const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     return this.getActivities(startOfDay, now);
+  },
+
+  /**
+   * Get health baseline for onboarding (90 days default)
+   */
+  async getBaseline(days: number = 90): Promise<HealthBaseline | null> {
+    if (!platformService?.getBaseline) return null;
+    return platformService.getBaseline(days);
   },
 };

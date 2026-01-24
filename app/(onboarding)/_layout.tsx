@@ -5,9 +5,11 @@ import { ProgressSteps } from '@/features/onboarding/components';
 
 // Routes that show progress bar with their step numbers
 const PROGRESS_ROUTES: Record<string, { step: number; total: number }> = {
-  consistency: { step: 1, total: 6 },
-  'screen-time': { step: 2, total: 6 },
-  'past-apps': { step: 3, total: 6 },
+  'fitness-habits': { step: 1, total: 5 },
+  'behavior-1': { step: 2, total: 5 },
+  'behavior-2': { step: 3, total: 5 },
+  'behavior-3': { step: 4, total: 5 },
+  'behavior-4': { step: 5, total: 5 },
 };
 
 export default function OnboardingLayout() {
@@ -21,7 +23,7 @@ export default function OnboardingLayout() {
 
   return (
     <View className="flex-1 bg-background-primary">
-      {/* Persistent Progress Bar - only for MCQ screens */}
+      {/* Persistent Progress Bar - only for behavior screens */}
       {showProgress && (
         <View
           className="px-6 pt-4 bg-background-primary"
@@ -48,16 +50,19 @@ export default function OnboardingLayout() {
           contentStyle: { backgroundColor: 'transparent' },
         }}
       >
+        {/* New flow screens */}
         <Stack.Screen name="welcome" />
-        <Stack.Screen name="consistency" />
-        <Stack.Screen name="screen-time" />
-        <Stack.Screen name="past-apps" />
-        <Stack.Screen name="analyzing" options={{ animation: 'fade' }} />
-        <Stack.Screen name="report" options={{ animation: 'fade' }} />
-        <Stack.Screen name="solution" />
-        <Stack.Screen name="activity-type" />
-        <Stack.Screen name="daily-target" />
+        <Stack.Screen name="about-you" />
         <Stack.Screen name="health-permissions" />
+        <Stack.Screen name="fitness-habits" />
+        <Stack.Screen name="behavior-1" />
+        <Stack.Screen name="behavior-2" />
+        <Stack.Screen name="behavior-3" />
+        <Stack.Screen name="behavior-4" />
+        <Stack.Screen name="activity-type" />
+        <Stack.Screen name="analyzing" options={{ animation: 'fade' }} />
+        <Stack.Screen name="profile-result" options={{ animation: 'fade' }} />
+        <Stack.Screen name="goal-recommendation" />
         <Stack.Screen name="app-blocking" />
         <Stack.Screen name="notifications" />
         <Stack.Screen name="complete" options={{ animation: 'fade' }} />

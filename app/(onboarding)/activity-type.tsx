@@ -6,7 +6,7 @@ import { ActivityTypeCard } from '@/features/onboarding/components';
 import { useOnboardingStore } from '@/features/onboarding/store/onboardingStore';
 import { ACTIVITY_OPTIONS } from '@/features/onboarding/constants/content';
 
-const TOTAL_STEPS = 6;
+const TOTAL_STEPS = 7;
 const CURRENT_STEP = 5;
 
 export default function ActivityTypeScreen() {
@@ -16,7 +16,7 @@ export default function ActivityTypeScreen() {
 
   const handleContinue = () => {
     if (activityType) {
-      router.push('/(onboarding)/daily-target');
+      router.push('/(onboarding)/analyzing');
     }
   };
 

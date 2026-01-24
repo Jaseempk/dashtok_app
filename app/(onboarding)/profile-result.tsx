@@ -1,9 +1,11 @@
-import { View, Text, ScrollView, Pressable } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withDelay,
   withTiming,
+  withRepeat,
+  withSequence,
   Easing,
 } from 'react-native-reanimated';
 import { useEffect } from 'react';
@@ -11,44 +13,78 @@ import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Icon } from '@/components/ui';
 import { useOnboardingStore } from '@/features/onboarding/store/onboardingStore';
-import { PROFILE_CONTENT } from '@/features/onboarding/constants/content';
-import { ProfileBadge, GrowthBarChart } from '@/features/onboarding/components';
+import { OnboardingHeader, ProfileBadge, GrowthBarChart } from '@/features/onboarding/components';
 
-export default function ReportScreen() {
+const PROFILE_TITLES: Record<string, { title: string; subtitle: string }> = {
+  rebuilder: { title: 'The Momentum', subtitle: 'Rebuilder' },
+  starter: { title: 'The Fresh', subtitle: 'Starter' },
+  optimizer: { title: 'The Active', subtitle: 'Optimizer' },
+  guardian: { title: 'The Digital', subtitle: 'Guardian' },
+};
+
+export default function ProfileResultScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { profileType } = useOnboardingStore();
+  const { goalRecommendation } = useOnboardingStore();
 
-  const profile = PROFILE_CONTENT[profileType ?? 'inconsistent-achiever'];
+  // Fallback if no recommendation (shouldn't happen in normal flow)
+  const profileType = goalRecommendation?.profileType ?? 'starter';
+  const profileTitles = PROFILE_TITLES[profileType] ?? PROFILE_TITLES.starter;
+  const insight = goalRecommendation?.profileInsight ?? 'Your personalized plan is ready.';
+  const successProbability = goalRecommendation?.successProbability ?? 85;
+  const projectedGain = goalRecommendation?.projectedGain ?? '+120% in 30 days';
+
+  // Parse projected gain for chart (extract percentage)
+  const gainMatch = projectedGain.match(/\+?(\d+)%/);
+  const gainPercent = gainMatch ? parseInt(gainMatch[1], 10) : 120;
 
   // Animation values
   const badgeOpacity = useSharedValue(0);
+  const profileOpacity = useSharedValue(0);
   const titleOpacity = useSharedValue(0);
   const titleTranslateY = useSharedValue(15);
-  const descriptionOpacity = useSharedValue(0);
+  const insightOpacity = useSharedValue(0);
   const successOpacity = useSharedValue(0);
+  const successScale = useSharedValue(1);
   const chartOpacity = useSharedValue(0);
 
   useEffect(() => {
     // Staggered entrance animations
     badgeOpacity.value = withTiming(1, { duration: 400 });
+    profileOpacity.value = withDelay(200, withTiming(1, { duration: 400 }));
 
     titleOpacity.value = withDelay(
-      200,
+      400,
       withTiming(1, { duration: 400, easing: Easing.out(Easing.cubic) })
     );
     titleTranslateY.value = withDelay(
-      200,
+      400,
       withTiming(0, { duration: 400, easing: Easing.out(Easing.cubic) })
     );
 
-    descriptionOpacity.value = withDelay(400, withTiming(1, { duration: 400 }));
-    successOpacity.value = withDelay(600, withTiming(1, { duration: 400 }));
-    chartOpacity.value = withDelay(800, withTiming(1, { duration: 400 }));
+    insightOpacity.value = withDelay(600, withTiming(1, { duration: 400 }));
+    successOpacity.value = withDelay(800, withTiming(1, { duration: 400 }));
+    chartOpacity.value = withDelay(1000, withTiming(1, { duration: 400 }));
+
+    // Subtle pulse on success stat
+    successScale.value = withDelay(
+      1200,
+      withRepeat(
+        withSequence(
+          withTiming(1.02, { duration: 1000 }),
+          withTiming(1, { duration: 1000 })
+        ),
+        -1
+      )
+    );
   }, []);
 
   const badgeStyle = useAnimatedStyle(() => ({
     opacity: badgeOpacity.value,
+  }));
+
+  const profileStyle = useAnimatedStyle(() => ({
+    opacity: profileOpacity.value,
   }));
 
   const titleStyle = useAnimatedStyle(() => ({
@@ -56,12 +92,13 @@ export default function ReportScreen() {
     transform: [{ translateY: titleTranslateY.value }],
   }));
 
-  const descriptionStyle = useAnimatedStyle(() => ({
-    opacity: descriptionOpacity.value,
+  const insightStyle = useAnimatedStyle(() => ({
+    opacity: insightOpacity.value,
   }));
 
   const successStyle = useAnimatedStyle(() => ({
     opacity: successOpacity.value,
+    transform: [{ scale: successScale.value }],
   }));
 
   const chartStyle = useAnimatedStyle(() => ({
@@ -69,11 +106,7 @@ export default function ReportScreen() {
   }));
 
   const handleContinue = () => {
-    router.push('/(onboarding)/solution');
-  };
-
-  const handleSkip = () => {
-    router.push('/(onboarding)/activity-type');
+    router.push('/(onboarding)/goal-recommendation');
   };
 
   return (
@@ -81,21 +114,7 @@ export default function ReportScreen() {
       className="flex-1 bg-background-primary"
       style={{ paddingTop: insets.top }}
     >
-      {/* Header */}
-      <View className="flex-row items-center justify-between px-6 py-4">
-        <Pressable
-          onPress={() => router.back()}
-          className="w-11 h-11 items-center justify-center rounded-full active:bg-background-secondary"
-        >
-          <Icon name="arrow-back" size="lg" color="#9ca3af" />
-        </Pressable>
-        <Text className="text-xs font-semibold text-gray-400 tracking-wider uppercase">
-          Analysis Report
-        </Text>
-        <Pressable onPress={handleSkip}>
-          <Text className="text-primary-500 font-semibold text-sm">Skip</Text>
-        </Pressable>
-      </View>
+      <OnboardingHeader showBack={false} />
 
       <ScrollView
         className="flex-1"
@@ -116,25 +135,27 @@ export default function ReportScreen() {
           </Animated.View>
 
           {/* Profile Badge */}
-          <ProfileBadge size={110} />
+          <Animated.View style={profileStyle}>
+            <ProfileBadge size={110} />
+          </Animated.View>
 
           {/* Profile Title */}
           <Animated.View style={titleStyle} className="items-center mt-6 mb-6">
             <Text className="text-3xl font-medium text-white tracking-tight">
-              {profile.title}
+              {profileTitles.title}
             </Text>
             <Text className="text-4xl font-normal text-primary-500 italic">
-              {profile.subtitle}
+              {profileTitles.subtitle}
             </Text>
           </Animated.View>
 
-          {/* Description Card */}
+          {/* Insight Card */}
           <Animated.View
-            style={descriptionStyle}
+            style={insightStyle}
             className="w-full rounded-2xl bg-background-secondary/60 border border-border-subtle p-5"
           >
             <Text className="text-sm text-gray-300 leading-relaxed text-center">
-              {profile.description}
+              {insight}
             </Text>
           </Animated.View>
         </View>
@@ -146,12 +167,11 @@ export default function ReportScreen() {
         >
           <View className="flex-row items-center gap-4">
             <View className="flex-row items-center gap-2">
-              <Text className="text-5xl font-bold text-transparent bg-clip-text"
-                style={{
-                  color: '#00f5d4',
-                }}
+              <Text
+                className="text-5xl font-bold"
+                style={{ color: '#00f5d4' }}
               >
-                {profile.successRate}%
+                {successProbability}%
               </Text>
               <Icon name="chart" size="xl" color="#00f5d4" />
             </View>
@@ -165,7 +185,7 @@ export default function ReportScreen() {
 
         {/* Growth Chart */}
         <Animated.View style={chartStyle}>
-          <GrowthBarChart percentGain={profile.trajectoryGain} />
+          <GrowthBarChart percentGain={gainPercent} />
         </Animated.View>
       </ScrollView>
 
@@ -174,12 +194,9 @@ export default function ReportScreen() {
         className="absolute bottom-0 left-0 right-0 px-6 pt-4"
         style={{ paddingBottom: Math.max(insets.bottom, 16) + 8 }}
       >
-        {/* Gradient overlay */}
         <View className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-background-primary via-background-primary/95 to-transparent pointer-events-none" />
         <View className="relative">
-          <Button onPress={handleContinue}>
-            See My Plan
-          </Button>
+          <Button onPress={handleContinue}>See My Goal</Button>
         </View>
       </View>
     </View>

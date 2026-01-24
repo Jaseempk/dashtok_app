@@ -1,7 +1,10 @@
 export { OnboardingLayout } from './OnboardingLayout';
 export { OnboardingHero } from './OnboardingHero';
+export { OnboardingHeader } from './OnboardingHeader';
 export { ProgressSteps } from './ProgressSteps';
 export { QuestionCard } from './QuestionCard';
+export { ChipSelector } from './ChipSelector';
+export { FrequencySelector } from './FrequencySelector';
 export { CircularProgress } from './CircularProgress';
 export { AnalysisStep } from './AnalysisStep';
 export { ActivityTypeCard } from './ActivityTypeCard';

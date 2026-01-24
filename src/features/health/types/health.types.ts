@@ -1,4 +1,5 @@
 import type { ActivityType } from '@/features/activities/types/activity.types';
+import type { HealthBaseline } from '@/features/onboarding/types/onboarding.types';
 
 export type HealthPermissionStatus = 'granted' | 'denied' | 'not_determined' | 'unavailable';
 
@@ -20,6 +21,12 @@ export interface HealthActivity {
   calories?: number;
   startedAt: Date;
   endedAt: Date;
+
+  // Anti-cheat: source metadata
+  sourceBundleId?: string | null;
+  sourceDeviceModel?: string | null;
+  isManualEntry?: boolean;
+  routePointCount?: number;
 }
 
 export interface HealthService {
@@ -42,6 +49,11 @@ export interface HealthService {
    * Get activities from health store within date range
    */
   getActivities(startDate: Date, endDate: Date): Promise<HealthActivity[]>;
+
+  /**
+   * Get health baseline for onboarding (optional, 90 days default)
+   */
+  getBaseline?(days?: number): Promise<HealthBaseline | null>;
 }
 
 export interface SyncResult {

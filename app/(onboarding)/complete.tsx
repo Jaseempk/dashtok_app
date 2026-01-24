@@ -22,7 +22,18 @@ export default function CompleteScreen() {
   const [submitState, setSubmitState] = useState<SubmitState>('idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const { activityType, dailyTargetKm, reset } = useOnboardingStore();
+  const {
+    activityType,
+    dailyTargetKm,
+    ageRange,
+    gender,
+    heightRange,
+    goalRecommendation,
+    userAdjustedGoal,
+    getBehaviorScore,
+    getRewardMinutes,
+    reset,
+  } = useOnboardingStore();
 
   // Success animation values
   const successScale = useSharedValue(0.8);
@@ -40,32 +51,42 @@ export default function CompleteScreen() {
     opacity: cardOpacity.value,
   }));
 
-  // Calculate screen time reward based on activity and distance
-  const getScreenTimeReward = () => {
-    const baseMinutes = activityType === 'run' ? 45 : activityType === 'walk' ? 20 : 30;
-    const multiplier = dailyTargetKm / 2;
-    return Math.round(baseMinutes * multiplier);
-  };
+  const rewardMinutes = getRewardMinutes();
 
   const handleComplete = async () => {
     setSubmitState('loading');
     setErrorMessage(null);
 
     try {
-      // Create the goal
+      // Create the goal with LLM suggestion tracking
+      // Note: Only include suggestedValue if it exists (Zod rejects null)
       await api.post('/goals', {
         goalType: 'daily',
         activityType: activityType || 'walk',
         targetValue: dailyTargetKm,
         targetUnit: 'km',
-        rewardMinutes: getScreenTimeReward(),
+        rewardMinutes,
+        // Optional analytics fields (omit if undefined, don't send null)
+        ...(goalRecommendation?.suggestedDistanceKm && {
+          suggestedValue: goalRecommendation.suggestedDistanceKm,
+        }),
+        ...(userAdjustedGoal !== undefined && { userAdjusted: userAdjustedGoal }),
       });
 
-      // Mark onboarding as complete and set timezone
+      // Mark onboarding as complete with analytics fields
+      // Note: Only include fields if they have values (Zod rejects null)
       const timezone = Localization.getCalendars()[0]?.timeZone ?? 'UTC';
       await api.patch('/users/me', {
         onboardingCompleted: true,
         timezone,
+        // Optional analytics fields (omit if null, don't send null)
+        ...(ageRange && { ageRange }),
+        ...(gender && { gender }),
+        ...(heightRange && { heightRange }),
+        initialBehaviorScore: getBehaviorScore(),
+        ...(goalRecommendation?.profileType && {
+          profileType: goalRecommendation.profileType,
+        }),
       });
 
       setSubmitState('success');
@@ -152,7 +173,7 @@ export default function CompleteScreen() {
                 </View>
                 <View className="w-16 h-16 rounded-full bg-primary-500/20 items-center justify-center">
                   <Icon
-                    name={activityType === 'run' ? 'run' : activityType === 'walk' ? 'walk' : 'activity'}
+                    name={activityType === 'run' ? 'run' : 'walk'}
                     size="xl"
                     color="#00f5d4"
                   />
@@ -166,7 +187,7 @@ export default function CompleteScreen() {
                 <Text className="text-gray-400">
                   Earn{' '}
                   <Text className="text-primary-500 font-semibold">
-                    {getScreenTimeReward()} min
+                    {rewardMinutes} min
                   </Text>{' '}
                   of screen time
                 </Text>

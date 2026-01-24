@@ -8,6 +8,7 @@ import {
   HKWorkoutTypeIdentifier,
   HKWorkoutActivityType,
 } from '@kingstinct/react-native-healthkit';
+import type { HealthBaseline } from '@/features/onboarding/types/onboarding.types';
 import type { HKWorkout } from '@kingstinct/react-native-healthkit';
 import type {
   HealthService,
@@ -167,6 +168,10 @@ class HealthKitService implements HealthService {
         ? Math.round(workout.totalEnergyBurned.quantity)
         : undefined;
 
+      // Anti-cheat: extract source info
+      const sourceInfo = this.getSourceInfo(workout);
+      const routePointCount = this.getRoutePointCount(workout);
+
       return {
         id: workout.uuid || `hk_${startedAt.getTime()}_${endedAt.getTime()}`,
         activityType,
@@ -176,10 +181,50 @@ class HealthKitService implements HealthService {
         calories,
         startedAt,
         endedAt,
+        // Anti-cheat metadata
+        sourceBundleId: sourceInfo.bundleId,
+        sourceDeviceModel: sourceInfo.deviceModel,
+        isManualEntry: sourceInfo.isManualEntry,
+        routePointCount,
       };
     } catch (error) {
       console.error('[HealthKit] transformWorkout error:', error);
       return null;
+    }
+  }
+
+  private getSourceInfo(workout: HKWorkout): {
+    bundleId: string | null;
+    deviceModel: string | null;
+    isManualEntry: boolean;
+  } {
+    // Extract source bundle identifier (e.g., "com.apple.health")
+    const bundleId =
+      (workout as any).sourceRevision?.source?.bundleIdentifier ?? null;
+
+    // Extract device model (e.g., "Watch" or "iPhone")
+    const deviceModel = (workout as any).device?.model ?? null;
+
+    // Check if manually entered by user
+    const isManualEntry =
+      (workout as any).metadata?.HKWasUserEntered === true ||
+      (workout as any).metadata?.['HKWasUserEntered'] === 1;
+
+    return { bundleId, deviceModel, isManualEntry };
+  }
+
+  private getRoutePointCount(workout: HKWorkout): number {
+    try {
+      // Try to access workout routes (available in v8+)
+      const routes = (workout as any).workoutRoutes || [];
+      if (!Array.isArray(routes)) return 0;
+
+      return routes.reduce(
+        (sum: number, route: any) => sum + (route.locations?.length || 0),
+        0
+      );
+    } catch {
+      return 0;
     }
   }
 
@@ -201,6 +246,80 @@ class HealthKitService implements HealthService {
     } catch (error) {
       console.error('[HealthKit] getStepsForPeriod error:', error);
       return undefined;
+    }
+  }
+
+  /**
+   * Get health baseline for onboarding (90 days default)
+   * Uses passive step/distance tracking, not just workouts
+   */
+  async getBaseline(days: number = 90): Promise<HealthBaseline | null> {
+    if (!this.authorized) {
+      const permResult = await this.checkPermissions();
+      if (permResult.status !== 'granted') {
+        console.warn('[HealthKit] Not authorized to read baseline');
+        return null;
+      }
+    }
+
+    try {
+      const endDate = new Date();
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - days);
+
+      // Query steps (passive tracking, even without workouts)
+      const stepSamples = await queryQuantitySamples(HKQuantityTypeIdentifier.stepCount, {
+        from: startDate,
+        to: endDate,
+      });
+
+      // Query distance (passive tracking)
+      const distanceSamples = await queryQuantitySamples(
+        HKQuantityTypeIdentifier.distanceWalkingRunning,
+        { from: startDate, to: endDate }
+      );
+
+      // Query workouts
+      const workouts = await queryWorkoutSamples({
+        from: startDate,
+        to: endDate,
+        limit: 500, // Higher limit for 90 days
+      });
+
+      // Calculate totals
+      const totalSteps = stepSamples.reduce((sum, s) => sum + (s.quantity || 0), 0);
+      const totalDistanceMeters = distanceSamples.reduce((sum, s) => sum + (s.quantity || 0), 0);
+      const totalWorkouts = workouts.length;
+      const hasRunningWorkouts = workouts.some(
+        (w) => w.workoutActivityType === HKWorkoutActivityType.running
+      );
+
+      // No data = return null
+      if (totalSteps === 0 && totalDistanceMeters === 0) {
+        console.log('[HealthKit] No baseline data found');
+        return null;
+      }
+
+      // Calculate daily averages
+      const avgDailySteps = Math.round(totalSteps / days);
+      const avgDailyDistanceKm = Math.round((totalDistanceMeters / 1000 / days) * 100) / 100;
+
+      console.log('[HealthKit] Baseline:', {
+        avgDailySteps,
+        avgDailyDistanceKm,
+        totalWorkouts,
+        hasRunningWorkouts,
+      });
+
+      return {
+        avgDailySteps,
+        avgDailyDistanceKm,
+        totalWorkouts,
+        hasRunningWorkouts,
+      };
+    } catch (error) {
+      console.error('[HealthKit] getBaseline error:', error);
+      return null;
     }
   }
 }

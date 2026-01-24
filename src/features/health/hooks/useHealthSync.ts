@@ -42,6 +42,11 @@ export function useHealthSync(): UseHealthSyncResult {
             endedAt: activity.endedAt.toISOString(),
             source: 'healthkit',
             healthkitId: activity.id,
+            // Anti-cheat: source metadata
+            sourceBundleId: activity.sourceBundleId,
+            sourceDeviceModel: activity.sourceDeviceModel,
+            isManualEntry: activity.isManualEntry,
+            routePointCount: activity.routePointCount,
           });
           result.synced++;
         } catch (error: any) {

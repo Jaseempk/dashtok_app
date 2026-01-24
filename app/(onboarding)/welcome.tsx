@@ -12,7 +12,7 @@ export default function WelcomeScreen() {
   const contentFadeIn = useFadeIn({ duration: 400, delay: 200, translateY: 20 });
 
   const handleContinue = () => {
-    router.push('/(onboarding)/consistency');
+    router.push('/(onboarding)/about-you');
   };
 
   return (
