@@ -1,7 +1,7 @@
 import { View, Text, ActivityIndicator } from 'react-native';
 import { Icon } from '@/components/ui';
 
-type StepStatus = 'pending' | 'loading' | 'complete';
+export type StepStatus = 'pending' | 'loading' | 'complete' | 'error';
 
 interface AnalysisStepProps {
   label: string;
@@ -25,18 +25,23 @@ export function AnalysisStep({ label, status, stepNumber }: AnalysisStepProps) {
             <Icon name="check" size="sm" color="#0a0f1a" />
           </View>
         )}
+        {status === 'error' && (
+          <View className="w-6 h-6 rounded-full bg-red-500 items-center justify-center">
+            <Icon name="close" size="sm" color="#ffffff" />
+          </View>
+        )}
       </View>
 
       {/* Content */}
       <View className="flex-1">
         {stepNumber && (
           <Text className="text-xs text-gray-500 uppercase tracking-wider mb-0.5">
-            {status === 'loading' ? 'Computing' : `Step ${stepNumber.toString().padStart(2, '0')}`}
+            {status === 'loading' ? 'Computing' : status === 'error' ? 'Failed' : `Step ${stepNumber.toString().padStart(2, '0')}`}
           </Text>
         )}
         <Text
           className={`text-[15px] font-medium ${
-            status === 'complete' ? 'text-white' : 'text-gray-400'
+            status === 'complete' ? 'text-white' : status === 'error' ? 'text-red-400' : 'text-gray-400'
           }`}
         >
           {label}

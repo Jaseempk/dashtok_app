@@ -18,6 +18,8 @@ export function DistanceSlider({
   unit = 'km',
   onChange,
 }: DistanceSliderProps) {
+  const unitLabel = unit.toUpperCase();
+
   return (
     <View className="w-full">
       <Slider
@@ -27,16 +29,16 @@ export function DistanceSlider({
         step={step}
         onValueChange={onChange}
         minimumTrackTintColor="#00f5d4"
-        maximumTrackTintColor="#374151"
+        maximumTrackTintColor="#1e293b"
         thumbTintColor="#00f5d4"
         style={{ width: '100%', height: 40 }}
       />
-      <View className="flex-row justify-between px-1 mt-1">
-        <Text className="text-gray-500 text-xs">
-          {min} {unit}
+      <View className="flex-row justify-between mt-2">
+        <Text className="text-[10px] text-gray-500 tracking-wider font-mono">
+          {min} {unitLabel}
         </Text>
-        <Text className="text-gray-500 text-xs">
-          {max} {unit}
+        <Text className="text-[10px] text-gray-500 tracking-wider font-mono">
+          {max} {unitLabel}
         </Text>
       </View>
     </View>

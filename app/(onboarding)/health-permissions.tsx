@@ -1,12 +1,12 @@
-import { useState } from 'react';
-import { View, Text, Pressable, Alert, Platform } from 'react-native';
-import { useRouter } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Button, Icon } from '@/components/ui';
-import { PermissionRow } from '@/features/onboarding/components';
-import { useOnboardingStore } from '@/features/onboarding/store/onboardingStore';
-import { HEALTH_PERMISSIONS } from '@/features/onboarding/constants/content';
-import { useHealthPermissions } from '@/features/health';
+import { useState } from "react";
+import { View, Text, Pressable, Alert, Platform } from "react-native";
+import { useRouter } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Button, Icon } from "@/components/ui";
+import { PermissionRow } from "@/features/onboarding/components";
+import { useOnboardingStore } from "@/features/onboarding/store/onboardingStore";
+import { HEALTH_PERMISSIONS } from "@/features/onboarding/constants/content";
+import { useHealthPermissions } from "@/features/health";
 
 export default function HealthPermissionsScreen() {
   const router = useRouter();
@@ -20,45 +20,45 @@ export default function HealthPermissionsScreen() {
     try {
       if (!isAvailable) {
         Alert.alert(
-          'Health Data Unavailable',
-          Platform.OS === 'ios'
-            ? 'Apple Health is not available on this device. You can still log activities manually.'
-            : 'Health Connect is not available on this device. You can still log activities manually.',
+          "Health Data Unavailable",
+          Platform.OS === "ios"
+            ? "Apple Health is not available on this device. You can still log activities manually."
+            : "Health Connect is not available on this device. You can still log activities manually.",
           [
-            { text: 'Continue Anyway', onPress: () => handleSkip() },
-            { text: 'Cancel', style: 'cancel' },
-          ]
+            { text: "Continue Anyway", onPress: () => handleSkip() },
+            { text: "Cancel", style: "cancel" },
+          ],
         );
         return;
       }
 
       const result = await request();
 
-      if (result.status === 'granted') {
+      if (result.status === "granted") {
         setHealthConnected(true);
-        router.push('/(onboarding)/fitness-habits');
-      } else if (result.status === 'denied') {
+        router.push("/(onboarding)/fitness-habits");
+      } else if (result.status === "denied") {
         Alert.alert(
-          'Permission Denied',
-          'Health data access was denied. You can enable it later in Settings, or continue to log activities manually.',
+          "Permission Denied",
+          "Health data access was denied. You can enable it later in Settings, or continue to log activities manually.",
           [
-            { text: 'Continue Without Health', onPress: () => handleSkip() },
-            { text: 'Try Again', onPress: () => handleConnect() },
-          ]
+            { text: "Continue Without Health", onPress: () => handleSkip() },
+            { text: "Try Again", onPress: () => handleConnect() },
+          ],
         );
       } else {
         // unavailable or other status
         handleSkip();
       }
     } catch (error) {
-      console.error('[HealthPermissions] Error:', error);
+      console.error("[HealthPermissions] Error:", error);
       Alert.alert(
-        'Connection Failed',
-        'Unable to connect to health data. You can try again later or continue without it.',
+        "Connection Failed",
+        "Unable to connect to health data. You can try again later or continue without it.",
         [
-          { text: 'Continue Without Health', onPress: () => handleSkip() },
-          { text: 'Cancel', style: 'cancel' },
-        ]
+          { text: "Continue Without Health", onPress: () => handleSkip() },
+          { text: "Cancel", style: "cancel" },
+        ],
       );
     } finally {
       setIsRequesting(false);
@@ -66,7 +66,7 @@ export default function HealthPermissionsScreen() {
   };
 
   const handleSkip = () => {
-    router.push('/(onboarding)/fitness-habits');
+    router.push("/(onboarding)/fitness-habits");
   };
 
   const handleBack = () => {
@@ -92,7 +92,9 @@ export default function HealthPermissionsScreen() {
           Step 2 of 7
         </Text>
         <Pressable onPress={handleSkip} disabled={buttonLoading}>
-          <Text className={`font-semibold text-sm ${buttonLoading ? 'text-gray-500' : 'text-primary-500'}`}>
+          <Text
+            className={`font-semibold text-sm ${buttonLoading ? "text-gray-500" : "text-primary-500"}`}
+          >
             Skip
           </Text>
         </Pressable>
@@ -108,10 +110,11 @@ export default function HealthPermissionsScreen() {
 
         {/* Title */}
         <Text className="text-3xl font-bold text-white text-center mb-2">
-          Connect your{'\n'}health data
+          Connect your{"\n"}Apple health
         </Text>
         <Text className="text-base text-gray-400 text-center mb-8">
-          We'll sync your activity to track your{'\n'}progress and unlock rewards.
+          We'll sync your activity to track your{"\n"}progress and unlock
+          rewards.
         </Text>
 
         {/* Permission Rows */}
@@ -130,11 +133,13 @@ export default function HealthPermissionsScreen() {
         <View className="mt-6 p-4 rounded-xl bg-background-secondary/50">
           <View className="flex-row items-center gap-2 mb-1">
             <Icon name="lock" size="sm" color="#00f5d4" />
-            <Text className="text-sm font-semibold text-white">Your data stays private</Text>
+            <Text className="text-sm font-semibold text-white">
+              Your data stays private
+            </Text>
           </View>
           <Text className="text-xs text-gray-400 leading-relaxed">
-            We only read what's needed to verify your activity. Your health data is never
-            sold or shared with third parties.
+            We only read what's needed to verify your activity. Your health data
+            is never sold or shared with third parties.
           </Text>
         </View>
 
@@ -142,9 +147,9 @@ export default function HealthPermissionsScreen() {
         {!isAvailable && !isLoading && (
           <View className="mt-4 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
             <Text className="text-xs text-yellow-500 text-center">
-              {Platform.OS === 'ios'
-                ? 'Apple Health is not available on this device'
-                : 'Health Connect is not installed on this device'}
+              {Platform.OS === "ios"
+                ? "Apple Health is not available on this device"
+                : "Health Connect is not installed on this device"}
             </Text>
           </View>
         )}

@@ -1,11 +1,15 @@
-import { View, Text } from 'react-native';
-import { useRouter } from 'expo-router';
-import { Icon } from '@/components/ui';
-import { OnboardingLayout, OnboardingHero, FrequencySelector } from '@/features/onboarding/components';
-import { useOnboardingStore } from '@/features/onboarding/store/onboardingStore';
-import { BEHAVIOR_QUESTIONS } from '@/features/onboarding/constants/behaviorQuestions';
+import { View, Text } from "react-native";
+import { useRouter } from "expo-router";
+import { Icon } from "@/components/ui";
+import {
+  OnboardingLayout,
+  OnboardingHero,
+  FrequencySelector,
+} from "@/features/onboarding/components";
+import { useOnboardingStore } from "@/features/onboarding/store/onboardingStore";
+import { BEHAVIOR_QUESTIONS } from "@/features/onboarding/constants/behaviorQuestions";
 
-const CONFIG = BEHAVIOR_QUESTIONS[1];
+const CONFIG = BEHAVIOR_QUESTIONS[1]!;
 
 export default function Behavior2Screen() {
   const router = useRouter();
@@ -14,7 +18,9 @@ export default function Behavior2Screen() {
   return (
     <OnboardingLayout skipTopInset hideFooter>
       <OnboardingHero
-        fallbackContent={<Icon name={CONFIG.icon as any} size="3xl" color="#00f5d4" />}
+        fallbackContent={
+          <Icon name={CONFIG.icon} size="3xl" color="#00f5d4" />
+        }
       />
       <View className="mb-6">
         <Text className="text-base text-gray-400 mb-2">

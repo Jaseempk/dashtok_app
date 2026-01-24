@@ -81,6 +81,12 @@ const ICON_MAP = {
   'cloud': 'cloud-outline',
   'hand': 'hand-left-outline',
   'flag': 'flag-outline',
+
+  // Behavior screens
+  'phone-portrait': 'phone-portrait-outline',
+  'tv': 'tv-outline',
+  'briefcase': 'briefcase-outline',
+  'refresh': 'refresh-outline',
 } as const;
 
 type IconName = keyof typeof ICON_MAP;

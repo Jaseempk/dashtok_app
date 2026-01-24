@@ -2,13 +2,12 @@ import { useEffect, useState, useRef } from 'react';
 import { View, Text } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSharedValue, withTiming, Easing } from 'react-native-reanimated';
 import { Icon } from '@/components/ui';
-import { CircularProgress, AnalysisStep } from '@/features/onboarding/components';
+import { CircularProgress, AnalysisStep, type StepStatus } from '@/features/onboarding/components';
 import { useOnboardingStore } from '@/features/onboarding/store/onboardingStore';
 import { onboardingApi } from '@/features/onboarding/api/onboardingApi';
 import { healthService } from '@/features/health/services/healthService';
-
-type StepStatus = 'pending' | 'loading' | 'complete' | 'error';
 
 interface AnalysisStepConfig {
   label: string;
@@ -21,6 +20,8 @@ const ANALYSIS_STEPS: AnalysisStepConfig[] = [
   { label: 'Generating personalized goal', progressThreshold: 75 },
   { label: 'Preparing your profile', progressThreshold: 100 },
 ];
+
+const ANIMATION_DURATION = 8000; // 8 seconds for full progress
 
 export default function AnalyzingScreen() {
   const router = useRouter();
@@ -39,15 +40,23 @@ export default function AnalyzingScreen() {
     setGoalRecommendation,
   } = useOnboardingStore();
 
-  const [progress, setProgress] = useState(0);
+  const progress = useSharedValue(0);
   const [stepStatuses, setStepStatuses] = useState<StepStatus[]>(['pending', 'pending', 'pending', 'pending']);
   const [error, setError] = useState<string | null>(null);
   const hasStarted = useRef(false);
+  const isComplete = useRef(false);
 
   useEffect(() => {
     if (hasStarted.current) return;
     hasStarted.current = true;
 
+    // Start smooth progress animation
+    progress.value = withTiming(100, {
+      duration: ANIMATION_DURATION,
+      easing: Easing.bezier(0.25, 0.1, 0.25, 1),
+    });
+
+    // Run actual analysis in parallel
     runAnalysis();
   }, []);
 
@@ -55,7 +64,6 @@ export default function AnalyzingScreen() {
     try {
       // Step 1: Read health baseline (if connected)
       setStepStatuses(['loading', 'pending', 'pending', 'pending']);
-      setProgress(10);
 
       let baseline = null;
       if (healthConnected) {
@@ -64,15 +72,12 @@ export default function AnalyzingScreen() {
       }
 
       setStepStatuses(['complete', 'loading', 'pending', 'pending']);
-      setProgress(30);
 
-      // Step 2: Prepare data
-      await delay(500); // Brief pause for visual feedback
-      setProgress(50);
+      // Step 2: Prepare data (brief pause)
+      await delay(300);
 
       // Step 3: Call LLM API
       setStepStatuses(['complete', 'complete', 'loading', 'pending']);
-      setProgress(60);
 
       const behaviorScore = getBehaviorScore();
       const recommendation = await onboardingApi.generateGoal({
@@ -93,15 +98,19 @@ export default function AnalyzingScreen() {
 
       setGoalRecommendation(recommendation);
       setStepStatuses(['complete', 'complete', 'complete', 'loading']);
-      setProgress(85);
 
       // Step 4: Finalize
-      await delay(500);
+      await delay(300);
       setStepStatuses(['complete', 'complete', 'complete', 'complete']);
-      setProgress(100);
+      isComplete.current = true;
 
-      // Navigate to profile result
-      await delay(500);
+      // Snap progress to 100 and navigate
+      progress.value = withTiming(100, { duration: 400 }, () => {
+        // Navigate after animation completes
+      });
+
+      // Small delay then navigate
+      await delay(600);
       router.replace('/(onboarding)/profile-result');
     } catch (err) {
       console.error('[Analyzing] Error:', err);
@@ -121,10 +130,6 @@ export default function AnalyzingScreen() {
   };
 
   const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-  const getStepStatus = (index: number): StepStatus => {
-    return stepStatuses[index];
-  };
 
   return (
     <View
@@ -157,7 +162,7 @@ export default function AnalyzingScreen() {
           <AnalysisStep
             key={step.label}
             label={step.label}
-            status={getStepStatus(index)}
+            status={stepStatuses[index] ?? 'pending'}
             stepNumber={index + 1}
           />
         ))}

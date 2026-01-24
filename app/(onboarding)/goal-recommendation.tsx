@@ -1,11 +1,15 @@
-import { useRef } from 'react';
-import { View, Text, ScrollView } from 'react-native';
-import { useRouter } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import * as Haptics from 'expo-haptics';
-import { Button, Icon } from '@/components/ui';
-import { OnboardingHeader, DistanceSlider } from '@/features/onboarding/components';
-import { useOnboardingStore } from '@/features/onboarding/store/onboardingStore';
+import { useRef } from "react";
+import { View, Text, ScrollView } from "react-native";
+import { useRouter } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Svg, { Circle, Defs, LinearGradient, Stop } from "react-native-svg";
+import * as Haptics from "expo-haptics";
+import { Button, Icon } from "@/components/ui";
+import {
+  OnboardingHeader,
+  DistanceSlider,
+} from "@/features/onboarding/components";
+import { useOnboardingStore } from "@/features/onboarding/store/onboardingStore";
 
 export default function GoalRecommendationScreen() {
   const router = useRouter();
@@ -16,16 +20,16 @@ export default function GoalRecommendationScreen() {
     activityType,
     dailyTargetKm,
     goalRecommendation,
-    userAdjustedGoal,
     setDailyTargetKm,
     setUserAdjustedGoal,
   } = useOnboardingStore();
 
   const suggestedDistance = goalRecommendation?.suggestedDistanceKm ?? 2.0;
-  const reasoning = goalRecommendation?.reasoning ?? 'Based on your profile and fitness level.';
+  const reasoning =
+    goalRecommendation?.reasoning ?? "Based on your profile and fitness level.";
 
   // Calculate reward minutes
-  const rewardRate = activityType === 'run' ? 22 : 15;
+  const rewardRate = activityType === "run" ? 22 : 15;
   const rewardMinutes = Math.round(dailyTargetKm * rewardRate);
 
   const handleSliderChange = (value: number) => {
@@ -40,12 +44,15 @@ export default function GoalRecommendationScreen() {
   };
 
   const handleContinue = () => {
-    router.push('/(onboarding)/app-blocking');
+    router.push("/(onboarding)/app-blocking");
   };
 
-  // Calculate delta from suggested
-  const delta = dailyTargetKm - suggestedDistance;
-  const deltaText = delta > 0 ? `+${delta.toFixed(1)} km` : delta < 0 ? `${delta.toFixed(1)} km` : null;
+  // Ring constants (decorative, full ring)
+  const ringSize = 220;
+  const strokeWidth = 12;
+  const radius = (ringSize - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = 0; // 100% fill
 
   return (
     <View
@@ -60,50 +67,82 @@ export default function GoalRecommendationScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Title */}
-        <Text className="text-3xl font-bold text-white mb-2">
-          Your personalized{'\n'}daily goal
+        <Text className="text-3xl font-bold text-white text-center mb-2">
+          Your personalized{"\n"}daily goal
         </Text>
-        <Text className="text-base text-gray-400 mb-8">
+        <Text className="text-sm text-gray-400 text-center mb-10">
           AI-recommended based on your profile. Adjust if needed.
         </Text>
 
-        {/* Current Value Display */}
-        <View className="items-center mb-6">
-          <View className="w-40 h-40 rounded-full bg-background-secondary border-4 border-primary-500 items-center justify-center">
-            <Text className="text-5xl font-bold text-white">{dailyTargetKm}</Text>
-            <Text className="text-lg text-gray-400">km/day</Text>
-          </View>
-
-          {/* Delta indicator */}
-          {userAdjustedGoal && deltaText && (
-            <View className="flex-row items-center gap-1 mt-3">
-              <Icon
-                name={delta > 0 ? 'arrow-up' : 'arrow-down'}
-                size="sm"
-                color={delta > 0 ? '#22c55e' : '#f59e0b'}
+        {/* Gradient Ring Display */}
+        <View className="items-center mb-10">
+          <View className="w-64 h-64 items-center justify-center">
+            <Svg
+              width={ringSize}
+              height={ringSize}
+              style={{
+                position: "absolute",
+                transform: [{ rotate: "-90deg" }],
+              }}
+            >
+              <Defs>
+                <LinearGradient
+                  id="ringGradient"
+                  x1="0%"
+                  y1="0%"
+                  x2="100%"
+                  y2="0%"
+                >
+                  <Stop offset="0%" stopColor="#00f5d4" />
+                  <Stop offset="100%" stopColor="#00a3ff" />
+                </LinearGradient>
+              </Defs>
+              {/* Background circle */}
+              <Circle
+                cx={ringSize / 2}
+                cy={ringSize / 2}
+                r={radius}
+                stroke="#1e293b"
+                strokeWidth={strokeWidth}
+                fill="none"
+                opacity={0.5}
               />
-              <Text
-                className={`text-sm font-medium ${
-                  delta > 0 ? 'text-green-500' : 'text-amber-500'
-                }`}
-              >
-                {deltaText} from suggested
+              {/* Gradient progress circle */}
+              <Circle
+                cx={ringSize / 2}
+                cy={ringSize / 2}
+                r={radius}
+                stroke="url(#ringGradient)"
+                strokeWidth={strokeWidth}
+                fill="none"
+                strokeDasharray={circumference}
+                strokeDashoffset={strokeDashoffset}
+                strokeLinecap="round"
+              />
+            </Svg>
+            {/* Center value */}
+            <View className="items-center">
+              <Text className="text-6xl font-bold text-white">
+                {dailyTargetKm}
+              </Text>
+              <Text className="text-gray-400 font-light tracking-wide">
+                km/day
               </Text>
             </View>
-          )}
+          </View>
         </View>
 
-        {/* LLM Reasoning Card */}
-        <View className="rounded-2xl bg-background-secondary/60 border border-border-subtle p-4 mb-6">
-          <View className="flex-row items-start gap-3">
-            <View className="w-8 h-8 rounded-full bg-primary-500/20 items-center justify-center">
-              <Icon name="sparkles" size="sm" color="#00f5d4" />
+        {/* AI Recommendation Card */}
+        <View className="rounded-2xl bg-background-secondary/60 border border-white/10 p-5 mb-6">
+          <View className="flex-row items-start gap-4">
+            <View className="w-10 h-10 rounded-xl bg-primary-500/20 items-center justify-center">
+              <Icon name="sparkles" size="md" color="#00f5d4" />
             </View>
             <View className="flex-1">
-              <Text className="text-xs text-gray-500 uppercase tracking-wider mb-1">
+              <Text className="text-[10px] text-primary-500/80 uppercase tracking-widest mb-1">
                 AI Recommendation
               </Text>
-              <Text className="text-sm text-gray-300 leading-relaxed">
+              <Text className="text-xs text-gray-300 leading-relaxed">
                 {reasoning}
               </Text>
             </View>
@@ -122,20 +161,22 @@ export default function GoalRecommendationScreen() {
           />
         </View>
 
-        {/* Reward Preview Card */}
-        <View className="rounded-2xl bg-background-secondary border border-border-subtle p-5">
+        {/* Daily Reward Card */}
+        <View className="rounded-2xl bg-background-secondary/60 border border-white/10 p-5">
           <View className="flex-row items-center justify-between">
             <View>
-              <Text className="text-xs text-gray-500 tracking-wider uppercase mb-1">
+              <Text className="text-[10px] text-gray-500 uppercase tracking-widest mb-1">
                 Daily Reward
               </Text>
               <Text className="text-2xl font-bold text-white">
                 {rewardMinutes} min
               </Text>
-              <Text className="text-sm text-gray-400">of screen time</Text>
+              <Text className="text-xs text-gray-500">
+                of screen time unlocked
+              </Text>
             </View>
-            <View className="w-16 h-16 rounded-full bg-primary-500/20 items-center justify-center">
-              <Icon name="phone" size="xl" color="#00f5d4" />
+            <View className="w-14 h-14 rounded-2xl bg-amber-500/20 border border-amber-500/30 items-center justify-center">
+              <Icon name="phone" size="xl" color="#ffbf00" />
             </View>
           </View>
         </View>
